@@ -48,6 +48,12 @@
       </svg>
     );
 
+    const Youtube = ({ className = "w-6 h-6" }) => (
+      <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    );
+
     function TheDuckGo() {
       const [votes, setVotes] = useState({
         1: 2847, 2: 2653, 3: 2401, 4: 2198, 5: 1956, 6: 1823
@@ -84,6 +90,7 @@
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+          {/* 헤더 */}
           <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
@@ -101,175 +108,7 @@
             </div>
           </header>
 
+          {/* 메인 배너 */}
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-8 shadow-xl">
             <div className="max-w-7xl mx-auto px-4 text-center">
-              <h2 className="text-4xl font-bold mb-3">Of the Deok, By the Deok, For the Deok</h2>
-              <p className="text-lg opacity-90 mb-4">덕의, 덕에 의한, 덕을 위한 - 링컨도 인정한 덕질의 정의</p>
-              <div className="flex justify-center space-x-8 text-sm">
-                <div>
-                  <p className="font-bold text-yellow-300">덕의 (Of the Deok)</p>
-                  <p className="opacity-90">덕후들로 이루어진</p>
-                </div>
-                <div>
-                  <p className="font-bold text-yellow-300">덕에 의한 (By the Deok)</p>
-                  <p className="opacity-90">덕심으로 운영되는</p>
-                </div>
-                <div>
-                  <p className="font-bold text-yellow-300">덕을 위한 (For the Deok)</p>
-                  <p className="opacity-90">덕질을 위해 존재하는</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 py-12 mb-6">
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                🔥 실시간 인기 TOP 6 투표
-              </h2>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
-                {sortedIdols.map((idol, index) => {
-                  const currentRank = index + 1;
-                  return (
-                    <div key={idol.id} className="bg-white rounded-xl p-4 shadow-lg hover:shadow-2xl transition-all transform hover:scale-105">
-                      <div className="text-center">
-                        <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${idol.color} flex items-center justify-center text-2xl font-bold text-white mb-3 shadow-md`}>
-                          {idol.initial}
-                        </div>
-                        <div className={`text-3xl font-bold mb-2 ${
-                          currentRank === 1 ? 'text-yellow-500' : 
-                          currentRank === 2 ? 'text-gray-400' : 
-                          currentRank === 3 ? 'text-orange-600' : 
-                          'text-gray-600'
-                        }`}>
-                          #{currentRank}
-                        </div>
-                        <h3 className="font-bold text-gray-800 mb-2">{idol.name}</h3>
-                        <div className="mb-2">
-                          <div className="text-2xl font-bold text-purple-600">{votes[idol.id].toLocaleString()}</div>
-                          <div className="text-sm text-gray-600">({getVotePercentage(idol.id)}%)</div>
-                        </div>
-                        <button
-                          onClick={() => handleVote(idol.id)}
-                          disabled={hasVoted}
-                          className={`w-full py-2 rounded-lg font-medium transition-all flex items-center justify-center ${
-                            hasVoted 
-                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                              : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg hover:scale-105'
-                          }`}
-                        >
-                          <ThumbsUp className="w-4 h-4 mr-1" />
-                          {hasVoted ? '투표완료' : '덕심 투표'}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {hasVoted && (
-                <p className="text-center text-white mt-4 text-sm">✅ 오리님의 뜨거운 덕심에 감사합니다! 🦆 (1일 1회 투표 가능)</p>
-              )}
-            </div>
-          </div>
-
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
-              <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <Calendar className="w-6 h-6 mr-2 text-blue-600" />
-                  이번주 스케줄
-                </h2>
-                <p className="text-sm text-gray-600 mb-4">📅 덕후라면 놓치면 안될 일정! 덕질 달력</p>
-                
-                <div className="space-y-3">
-                  <div className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-bold text-purple-600">11/16 (토)</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-pink-100 text-pink-700">팬사인</span>
-                    </div>
-                    <p className="font-medium text-gray-800 text-sm">NewJeans 팬사인회</p>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <Clock className="w-3 h-3 mr-1" />
-                      14:00 · 코엑스
-                    </div>
-                  </div>
-
-                  <div className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-bold text-purple-600">11/17 (일)</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">방송</span>
-                    </div>
-                    <p className="font-medium text-gray-800 text-sm">IVE 뮤직뱅크 출연</p>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <Clock className="w-3 h-3 mr-1" />
-                      17:00 · KBS
-                    </div>
-                  </div>
-
-                  <div className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-bold text-purple-600">11/20 (수)</span>
-                      <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700">공연</span>
-                    </div>
-                    <p className="font-medium text-gray-800 text-sm">LE SSERAFIM 콘서트</p>
-                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                      <Clock className="w-3 h-3 mr-1" />
-                      19:00 · 잠실실내체육관
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-md p-6 lg:col-span-2">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <MessageCircle className="w-6 h-6 mr-2 text-pink-600" />
-                  아이돌 SNS
-                </h2>
-                <p className="text-sm text-gray-600 mb-4">📱 공식 & 개인 계정 모음</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {topIdols.map((idol) => (
-                    <div key={idol.id} className="border-l-4 border-purple-400 pl-3 py-2">
-                      <h3 className="font-bold text-gray-800 mb-2 flex items-center">
-                        <span className={`w-6 h-6 rounded-full bg-gradient-to-br ${idol.color} flex items-center justify-center text-xs mr-2 text-white font-bold`}>
-                          {idol.initial}
-                        </span>
-                        {idol.name}
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        <a href={`https://www.instagram.com/${idol.name.toLowerCase().replace(' ', '')}_official/`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded text-xs hover:shadow-md transition-all">
-                          📷 Official IG
-                        </a>
-                        <a href={`https://twitter.com/${idol.name.replace(' ', '')}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:shadow-md transition-all">
-                          🐦 Twitter
-                        </a>
-                        <a href={`https://www.youtube.com/@${idol.name.replace(' ', '')}`} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:shadow-md transition-all">
-                          ▶️ YouTube
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <footer className="bg-white mt-12 border-t border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 py-8 text-center text-gray-600">
-              <p className="text-sm">🦆 더덕고 - K-POP 덕후들의 성지</p>
-              <p className="text-xs mt-2">Of the Deok, By the Deok, For the Deok</p>
-              <p className="text-xs mt-4 text-gray-400">© 2025 TheDuckGo. All rights reserved.</p>
-            </div>
-          </footer>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<TheDuckGo />);
-  </script>
-</body>
-</html>
+              <h2 className="text-4xl
