@@ -3,328 +3,703 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>더덕고 - The Duck Go | K-POP 덕후들의 성지</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <title>THE DUCK GO - 덕의, 덕에 의한, 덕을 위한</title>
+  <meta name="description" content="K-POP 아이돌 덕후들의 놀이터 - 뮤직비디오, 스케줄, 투표, SNS 모음">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦆</text></svg>">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
-    .nav-item:hover { background-color: rgba(168, 85, 247, 0.1); }
-    .nav-item.active { border-bottom: 3px solid #a855f7; color: #a855f7; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 3px; }
   </style>
 </head>
 <body>
   <div id="root"></div>
   
   <script type="text/babel">
-    const { useState } = React;
-    
+    const { useState, useEffect } = React;
+
     // 아이콘 컴포넌트들
-    const Play = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+    const Play = ({ className, fill }) => (
+      <svg className={className} fill={fill || "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
       </svg>
     );
     
-    const Calendar = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    const Calendar = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
       </svg>
     );
     
-    const ThumbsUp = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+    const TrendingUp = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
       </svg>
     );
     
-    const MessageSquare = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+    const MessageSquare = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
       </svg>
     );
     
-    const Search = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    const Heart = ({ className }) => (
+      <svg className={className} fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
       </svg>
     );
     
-    const Bell = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    const X = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
       </svg>
     );
     
-    const User = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    const Instagram = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
       </svg>
     );
     
-    const TrendingUp = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    const Twitter = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
       </svg>
     );
     
-    const Home = ({ className = "w-6 h-6" }) => (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    const Youtube = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+      </svg>
+    );
+    
+    const Music = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
       </svg>
     );
 
     function TheDuckGo() {
-      const [activeTab, setActiveTab] = useState('home');
+      const [selectedVideo, setSelectedVideo] = useState(null);
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [resetDate, setResetDate] = useState('');
 
-      // 샘플 데이터
-      const musicVideos = [
-        { id: 1, artist: 'NewJeans', title: 'Super Shy', thumbnail: '🐰', views: '50M', date: '2024.11' },
-        { id: 2, artist: 'aespa', title: 'Drama', thumbnail: '🎭', views: '45M', date: '2024.11' },
-        { id: 3, artist: 'IVE', title: 'Baddie', thumbnail: '👑', views: '42M', date: '2024.10' },
-        { id: 4, artist: 'LE SSERAFIM', title: 'Perfect Night', thumbnail: '✨', views: '40M', date: '2024.10' },
-        { id: 5, artist: 'SEVENTEEN', title: 'God of Music', thumbnail: '🎵', views: '38M', date: '2024.10' },
-        { id: 6, artist: 'Stray Kids', title: 'LALALALA', thumbnail: '🔥', views: '35M', date: '2024.11' },
+      // 유튜브 MV ID와 아이돌 데이터 (초기값)
+      const initialIdolData = [
+        { 
+          id: 1, 
+          name: 'NewJeans', 
+          song: 'How Sweet',
+          videoId: 'Q3K0TOvTOno',
+          votes: 0,
+          color: 'from-blue-400 to-cyan-300'
+        },
+        { 
+          id: 2, 
+          name: 'aespa', 
+          song: 'Whiplash',
+          videoId: 'jWQx2f-CErU',
+          votes: 0,
+          color: 'from-purple-500 to-pink-400'
+        },
+        { 
+          id: 3, 
+          name: 'IVE', 
+          song: 'Baddie',
+          videoId: 'Da4P2uT4mVc',
+          votes: 0,
+          color: 'from-rose-400 to-orange-300'
+        },
+        { 
+          id: 4, 
+          name: 'LE SSERAFIM', 
+          song: 'CRAZY',
+          videoId: 'n6B5gQXlB-0',
+          votes: 0,
+          color: 'from-indigo-500 to-purple-400'
+        },
+        { 
+          id: 5, 
+          name: 'SEVENTEEN', 
+          song: 'MAESTRO',
+          videoId: 'ThI0pBAbFnk',
+          votes: 0,
+          color: 'from-sky-400 to-blue-500'
+        },
+        { 
+          id: 6, 
+          name: 'Stray Kids', 
+          song: 'Chk Chk Boom',
+          videoId: '0P0aQreFs8w',
+          votes: 0,
+          color: 'from-red-500 to-rose-400'
+        },
       ];
 
-      const topArtists = [
-        { rank: 1, name: 'NewJeans', change: '▲', emoji: '🐰' },
-        { rank: 2, name: 'aespa', change: '▲', emoji: '🎭' },
-        { rank: 3, name: 'IVE', change: '─', emoji: '👑' },
-        { rank: 4, name: 'LE SSERAFIM', change: '▲', emoji: '✨' },
-        { rank: 5, name: 'SEVENTEEN', change: '▼', emoji: '🎵' },
-      ];
-
-      const schedules = [
-        { date: '11.15', time: '18:00', event: 'NewJeans 컴백쇼', location: 'JTBC' },
-        { date: '11.16', time: '20:00', event: 'aespa 팬미팅', location: '잠실' },
-        { date: '11.17', time: '19:00', event: 'IVE 콘서트', location: '고척돔' },
-        { date: '11.18', time: '15:00', event: 'LE SSERAFIM 사인회', location: '코엑스' },
-      ];
-
-      const boardPosts = [
-        { id: 1, title: 'NewJeans 새 앨범 대박이네요!', author: '뉴진스팬', comments: 234, date: '11.14' },
-        { id: 2, title: 'aespa 무대 직캠 모음', author: '마이', comments: 156, date: '11.14' },
-        { id: 3, title: 'IVE 콘서트 후기', author: '다이브', comments: 89, date: '11.13' },
-        { id: 4, title: '12월 컴백 예정 아이돌 정리', author: '케이팝러버', comments: 412, date: '11.13' },
-        { id: 5, title: 'MAMA 시상식 라인업 발표!', author: '마마팬', comments: 567, date: '11.12' },
-      ];
-
-      // 네비게이션 메뉴 항목
-      const navItems = [
-        { id: 'home', name: '홈', icon: Home },
-        { id: 'mv', name: '뮤직비디오', icon: Play },
-        { id: 'schedule', name: '스케줄', icon: Calendar },
-        { id: 'top5', name: 'TOP5', icon: TrendingUp },
-        { id: 'board', name: '게시판', icon: MessageSquare },
-      ];
-
-      const scrollToSection = (sectionId) => {
-        setActiveTab(sectionId);
-        if (sectionId === 'home') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          const element = document.getElementById(sectionId);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+      // localStorage에서 투표 데이터 로드 및 월별 리셋 체크
+      const loadVoteData = () => {
+        try {
+          const saved = localStorage.getItem('duckgo_votes');
+          const savedMonth = localStorage.getItem('duckgo_vote_month');
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          
+          if (savedMonth !== currentMonth) {
+            localStorage.setItem('duckgo_vote_month', currentMonth);
+            localStorage.removeItem('duckgo_votes');
+            return initialIdolData;
           }
+          
+          if (saved) {
+            const parsedData = JSON.parse(saved);
+            return initialIdolData.map(idol => {
+              const savedIdol = parsedData.find(s => s.id === idol.id);
+              return savedIdol ? { ...idol, votes: savedIdol.votes } : idol;
+            }).sort((a, b) => b.votes - a.votes);
+          }
+        } catch (e) {
+          console.log('localStorage not available');
+        }
+        return initialIdolData;
+      };
+
+      const [voteData, setVoteData] = useState(loadVoteData);
+
+      useEffect(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        setResetDate(`${year}년 ${month}월`);
+      }, []);
+
+      // 뮤직비디오 데이터
+      const musicVideos = [
+        { id: 1, artist: 'NewJeans', title: 'How Sweet', videoId: 'Q3K0TOvTOno', views: '180M', date: '2024.05' },
+        { id: 2, artist: 'aespa', title: 'Whiplash', videoId: 'jWQx2f-CErU', views: '95M', date: '2024.10' },
+        { id: 3, artist: 'IVE', title: 'Baddie', videoId: 'Da4P2uT4mVc', views: '120M', date: '2023.10' },
+        { id: 4, artist: 'LE SSERAFIM', title: 'CRAZY', videoId: 'n6B5gQXlB-0', views: '85M', date: '2024.08' },
+        { id: 5, artist: 'SEVENTEEN', title: 'MAESTRO', videoId: 'ThI0pBAbFnk', views: '75M', date: '2024.05' },
+        { id: 6, artist: 'Stray Kids', title: 'Chk Chk Boom', videoId: '0P0aQreFs8w', views: '90M', date: '2024.07' },
+        { id: 7, artist: 'NMIXX', title: 'DASH', videoId: '7UecFm_bSTU', views: '45M', date: '2024.01' },
+        { id: 8, artist: 'ITZY', title: 'GOLD', videoId: 'eMk_0svqsnI', views: '55M', date: '2024.10' },
+      ];
+
+      // 스케줄 데이터
+      const schedules = [
+        { date: '11.20', time: '18:00', event: 'aespa 컴백쇼', type: 'broadcast', location: 'Mnet' },
+        { date: '11.21', time: '20:00', event: 'SEVENTEEN 팬미팅', type: 'fanmeeting', location: '잠실실내체육관' },
+        { date: '11.22', time: '19:00', event: 'IVE 콘서트', type: 'concert', location: '고척스카이돔' },
+        { date: '11.23', time: '15:00', event: 'NewJeans 사인회', type: 'fansign', location: '코엑스' },
+        { date: '11.24', time: '18:00', event: 'Stray Kids 음방', type: 'broadcast', location: 'KBS' },
+      ];
+
+      // SNS 계정 데이터
+      const snsAccounts = [
+        {
+          name: 'NewJeans',
+          official: {
+            instagram: 'newjeans_official',
+            twitter: 'NewJeans_ADOR',
+            youtube: '@NewJeans_official',
+            tiktok: '@newjeans_official'
+          },
+          members: [
+            { name: '민지', instagram: 'minji_newjeans' },
+            { name: '하니', instagram: 'hanni_newjeans' },
+            { name: '다니엘', instagram: 'daniellekimm' },
+            { name: '해린', instagram: 'haerin_newjeans' },
+            { name: '혜인', instagram: 'hyein_newjeans' }
+          ]
+        },
+        {
+          name: 'aespa',
+          official: {
+            instagram: 'aespa_official',
+            twitter: 'aesloookipa',
+            youtube: '@aespa',
+            tiktok: '@aespa_official'
+          },
+          members: [
+            { name: '카리나', instagram: 'katarinabluu' },
+            { name: '지젤', instagram: 'gisellekim_' },
+            { name: '윈터', instagram: 'winter.wxnter' },
+            { name: '닝닝', instagram: 'ningning_0323' }
+          ]
+        },
+        {
+          name: 'IVE',
+          official: {
+            instagram: 'ivestarship',
+            twitter: 'IVEstarship',
+            youtube: '@IVE',
+            tiktok: '@ivestarship_official'
+          },
+          members: [
+            { name: '안유진', instagram: '_yujin_an' },
+            { name: '가을', instagram: 'gaeul_ive' },
+            { name: '레이', instagram: 'ray_ive' },
+            { name: '장원영', instagram: 'for_everyoung10' },
+            { name: '리즈', instagram: 'liz_ive' },
+            { name: '이서', instagram: 'leeseo_ive' }
+          ]
+        },
+        {
+          name: 'LE SSERAFIM',
+          official: {
+            instagram: 'le_sserafim',
+            twitter: 'le_sserafim',
+            youtube: '@LESSERAFIM',
+            tiktok: '@le_sserafim'
+          },
+          members: [
+            { name: '사쿠라', instagram: '39saku_chan' },
+            { name: '김채원', instagram: '_chaechae_1' },
+            { name: '허윤진', instagram: 'jenaissansen' },
+            { name: '카즈하', instagram: 'kazuha__official' },
+            { name: '홍은채', instagram: 'eunchae_lesserafim' }
+          ]
+        },
+        {
+          name: 'SEVENTEEN',
+          official: {
+            instagram: 'saythename_17',
+            twitter: 'pledis_17',
+            youtube: '@SEVENTEEN',
+            tiktok: '@seventeen17_official'
+          },
+          members: []
+        },
+        {
+          name: 'Stray Kids',
+          official: {
+            instagram: 'realstraykids',
+            twitter: 'Stray_Kids',
+            youtube: '@StrayKids',
+            tiktok: '@jaborabangnda'
+          },
+          members: []
+        }
+      ];
+
+      // 게시판 데이터
+      const boardPosts = [
+        { id: 1, category: 'notice', title: '더덕고 오픈 기념 이벤트 안내', author: '운영자', comments: 156, date: '11.19', hot: true },
+        { id: 2, category: 'news', title: 'aespa 새 앨범 "Whiplash" 발매!', author: '에스파팬', comments: 89, date: '11.18', hot: true },
+        { id: 3, category: 'request', title: '투표 기능에 일일 제한 추가해주세요', author: '공정덕후', comments: 45, date: '11.18' },
+        { id: 4, category: 'free', title: 'NewJeans 컴백 언제...', author: '버니즈', comments: 234, date: '11.17', hot: true },
+        { id: 5, category: 'qna', title: '팬미팅 티켓팅 팁 있을까요?', author: '티켓팅초보', comments: 67, date: '11.17' },
+        { id: 6, category: 'news', title: 'LE SSERAFIM 일본 돔투어 확정', author: '피어나', comments: 123, date: '11.16' },
+        { id: 7, category: 'free', title: 'IVE 콘서트 후기 (스포주의)', author: '다이브', comments: 78, date: '11.16' },
+      ];
+
+      const categories = [
+        { id: 'all', name: '전체' },
+        { id: 'notice', name: '공지' },
+        { id: 'news', name: '소식' },
+        { id: 'request', name: '요청' },
+        { id: 'free', name: '자유' },
+        { id: 'qna', name: '질문답변' }
+      ];
+
+      const handleVote = (id) => {
+        setVoteData(prev => {
+          const updated = prev.map(idol => 
+            idol.id === id ? { ...idol, votes: idol.votes + 1 } : idol
+          ).sort((a, b) => b.votes - a.votes);
+          
+          try {
+            localStorage.setItem('duckgo_votes', JSON.stringify(updated.map(i => ({ id: i.id, votes: i.votes }))));
+          } catch (e) {
+            console.log('localStorage not available');
+          }
+          
+          return updated;
+        });
+      };
+
+      const getTypeColor = (type) => {
+        switch(type) {
+          case 'broadcast': return 'bg-blue-100 text-blue-700';
+          case 'concert': return 'bg-purple-100 text-purple-700';
+          case 'fanmeeting': return 'bg-pink-100 text-pink-700';
+          case 'fansign': return 'bg-green-100 text-green-700';
+          default: return 'bg-gray-100 text-gray-700';
         }
       };
 
+      const getCategoryColor = (category) => {
+        switch(category) {
+          case 'notice': return 'bg-red-100 text-red-700';
+          case 'news': return 'bg-blue-100 text-blue-700';
+          case 'request': return 'bg-yellow-100 text-yellow-700';
+          case 'free': return 'bg-green-100 text-green-700';
+          case 'qna': return 'bg-purple-100 text-purple-700';
+          default: return 'bg-gray-100 text-gray-700';
+        }
+      };
+
+      const filteredPosts = activeCategory === 'all' 
+        ? boardPosts 
+        : boardPosts.filter(post => post.category === activeCategory);
+
       return (
-        <div className="min-h-screen bg-gray-50">
-          {/* 헤더 */}
-          <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50">
+          {/* Header */}
+          <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 text-white shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-3xl">🦆</span>
+                <div className="flex items-center space-x-3">
+                  <span className="text-4xl">🦆</span>
                   <div>
-                    <h1 className="text-xl font-bold text-purple-600">The Duck Go</h1>
-                    <p className="text-xs text-gray-500">모든 덕들을 위한 K-POP 포털 | 덕중의 덕, 더욱 더 깊은 덕질</p>
+                    <h1 className="text-2xl font-bold tracking-tight">THE DUCK GO</h1>
+                    <p className="text-xs opacity-90">Of the Deok, By the Deok, For the Deok</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <Search className="w-5 h-5 text-gray-400 cursor-pointer hover:text-purple-600" />
-                  <Bell className="w-5 h-5 text-gray-400 cursor-pointer hover:text-purple-600" />
-                  <User className="w-5 h-5 text-gray-400 cursor-pointer hover:text-purple-600" />
-                </div>
+                <nav className="hidden md:flex space-x-6 text-sm font-medium">
+                  <a href="#vote" className="hover:text-yellow-200 transition-colors">덕심투표</a>
+                  <a href="#mv" className="hover:text-yellow-200 transition-colors">뮤직비디오</a>
+                  <a href="#schedule" className="hover:text-yellow-200 transition-colors">스케줄</a>
+                  <a href="#sns" className="hover:text-yellow-200 transition-colors">SNS</a>
+                  <a href="#board" className="hover:text-yellow-200 transition-colors">게시판</a>
+                </nav>
               </div>
             </div>
-            
-            {/* 네비게이션 바 */}
-            <nav className="bg-white border-t">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-center space-x-1">
-                  {navItems.map((item) => {
-                    const IconComponent = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => scrollToSection(item.id)}
-                        className={`nav-item flex items-center space-x-2 px-6 py-3 text-sm font-medium transition-colors ${
-                          activeTab === item.id 
-                            ? 'active text-purple-600' 
-                            : 'text-gray-600 hover:text-purple-600'
-                        }`}
-                      >
-                        <IconComponent className="w-4 h-4" />
-                        <span>{item.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </nav>
           </header>
 
-          {/* 히어로 섹션 */}
-          <section className="bg-gradient-to-r from-purple-100 to-pink-100 py-8">
+          {/* Hero Banner */}
+          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-8">
             <div className="max-w-7xl mx-auto px-4 text-center">
-              <h2 className="text-2xl font-bold text-purple-600 mb-2">Of the Deok, By the Deok, For the Deok</h2>
-              <p className="text-gray-600">덕의, 덕에 의한, 덕을 위한 포털</p>
-              <div className="mt-4 flex justify-center space-x-8">
-                <div className="flex items-center space-x-2">
-                  <span>📚</span>
-                  <span className="text-sm"><strong className="text-purple-600">덕(Deok)</strong> = 어떤 대상에 깊이 빠져 열정적으로 좋아하는 사람</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span>🦆</span>
-                  <span className="text-sm"><strong className="text-purple-600">오리들</strong> = 더덕고 포털의 소중한 식구들</span>
-                </div>
-              </div>
+              <h2 className="text-3xl font-bold mb-2">🦆 덕의, 덕에 의한, 덕을 위한</h2>
+              <p className="text-lg opacity-90 mb-2">K-POP 아이돌 덕후들의 놀이터</p>
+              <p className="text-sm opacity-75">
+                "덕(Duck)"은 오리, "덕(Deok)"은 덕후! 오리처럼 물 위에서는 우아하게, 물 밑에서는 열심히 덕질하는 우리들의 공간
+              </p>
             </div>
           </section>
 
-          {/* 메인 콘텐츠 */}
-          <main className="max-w-7xl mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* 왼쪽: 뮤직비디오 */}
-              <div className="lg:col-span-2" id="mv">
-                <div className="bg-white rounded-lg shadow p-6 mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold flex items-center">
-                      <Play className="w-5 h-5 mr-2 text-purple-600" />
-                      최신 뮤직비디오
-                    </h3>
-                    <a href="#" className="text-sm text-purple-600 hover:underline">더보기 →</a>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {musicVideos.map((mv) => (
-                      <div key={mv.id} className="group cursor-pointer">
-                        <div className="bg-gradient-to-br from-purple-200 to-pink-200 rounded-lg h-32 flex items-center justify-center text-4xl mb-2 group-hover:scale-105 transition-transform">
-                          {mv.thumbnail}
-                        </div>
-                        <p className="font-medium text-sm truncate">{mv.artist}</p>
-                        <p className="text-xs text-gray-500 truncate">{mv.title}</p>
-                        <p className="text-xs text-gray-400">{mv.views} views</p>
-                      </div>
-                    ))}
-                  </div>
+          <main className="max-w-7xl mx-auto px-4 py-6">
+            {/* 덕심투표 섹션 */}
+            <section id="vote" className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                    <TrendingUp className="w-6 h-6 mr-2 text-orange-500" />
+                    🔥 실시간 덕심투표 TOP 6
+                  </h2>
+                  {resetDate && (
+                    <p className="text-xs text-gray-500 mt-1 ml-8">
+                      📅 {resetDate} 투표 (매월 1일 리셋)
+                    </p>
+                  )}
                 </div>
+                <span className="text-sm text-gray-500">
+                  총 {voteData.reduce((sum, i) => sum + i.votes, 0).toLocaleString()}표 | 클릭하여 투표!
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {voteData.map((idol, index) => {
+                  const maxVotes = Math.max(...voteData.map(i => i.votes), 1);
+                  return (
+                  <div
+                    key={idol.id}
+                    onClick={() => handleVote(idol.id)}
+                    className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300 group"
+                    style={{ aspectRatio: '3/4' }}
+                  >
+                    {/* 유튜브 썸네일 배경 */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ 
+                        backgroundImage: `url(https://img.youtube.com/vi/${idol.videoId}/maxresdefault.jpg)` 
+                      }}
+                    />
+                    
+                    {/* 그라데이션 오버레이 */}
+                    <div className={`absolute inset-0 bg-gradient-to-t ${idol.color} opacity-60 group-hover:opacity-40 transition-opacity`} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                    
+                    {/* 순위 뱃지 */}
+                    <div className="absolute top-2 left-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center font-bold text-gray-800 shadow">
+                      {index + 1}
+                    </div>
+                    
+                    {/* 컨텐츠 */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      <h3 className="font-bold text-sm truncate">{idol.name}</h3>
+                      <p className="text-xs opacity-80 truncate">{idol.song}</p>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="flex items-center">
+                            <Heart className="w-3 h-3 mr-1 fill-current" />
+                            {idol.votes.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-white rounded-full transition-all duration-500"
+                            style={{ width: `${(idol.votes / maxVotes) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* 호버 효과 */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                        <Heart className="w-6 h-6 text-pink-500" />
+                      </div>
+                    </div>
+                  </div>
+                )})}
+              </div>
+            </section>
 
-                {/* 게시판 */}
-                <div className="bg-white rounded-lg shadow p-6" id="board">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold flex items-center">
-                      <MessageSquare className="w-5 h-5 mr-2 text-purple-600" />
-                      인기 게시글
-                    </h3>
-                    <a href="#" className="text-sm text-purple-600 hover:underline">더보기 →</a>
-                  </div>
-                  <div className="space-y-3">
-                    {boardPosts.map((post) => (
-                      <div key={post.id} className="flex items-center justify-between py-2 border-b last:border-0 hover:bg-gray-50 cursor-pointer">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium truncate">{post.title}</p>
-                          <p className="text-xs text-gray-500">{post.author} · 댓글 {post.comments}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* 왼쪽 컬럼 - 뮤직비디오 */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* 뮤직비디오 섹션 */}
+                <section id="mv" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Play className="w-6 h-6 mr-2 text-red-500" />
+                    공식 뮤직비디오
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">🎬 클릭하면 영상이 재생됩니다</p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {musicVideos.map((video) => (
+                      <div 
+                        key={video.id}
+                        onClick={() => setSelectedVideo(video)}
+                        className="group cursor-pointer"
+                      >
+                        <div className="relative aspect-video rounded-lg overflow-hidden mb-2 shadow-sm group-hover:shadow-md transition-shadow">
+                          <img 
+                            src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                            alt={`${video.artist} - ${video.title}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="white" />
+                          </div>
+                          <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1 rounded">
+                            {video.views}
+                          </div>
                         </div>
-                        <span className="text-xs text-gray-400 ml-4">{post.date}</span>
+                        <h3 className="text-xs font-medium text-gray-800 truncate">{video.artist}</h3>
+                        <p className="text-xs text-gray-500 truncate">{video.title}</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
+
+                {/* 게시판 섹션 */}
+                <section id="board" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <MessageSquare className="w-6 h-6 mr-2 text-green-600" />
+                    커뮤니티
+                  </h2>
+                  
+                  {/* 카테고리 탭 */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          activeCategory === cat.id 
+                            ? 'bg-orange-500 text-white' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* 게시글 목록 */}
+                  <div className="space-y-2">
+                    {filteredPosts.map((post) => (
+                      <div 
+                        key={post.id}
+                        className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(post.category)}`}>
+                            {categories.find(c => c.id === post.category)?.name}
+                          </span>
+                          <span className="text-sm text-gray-800 truncate flex items-center">
+                            {post.hot && <span className="text-red-500 mr-1">🔥</span>}
+                            {post.title}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-3 text-xs text-gray-500 ml-2">
+                          <span>{post.author}</span>
+                          <span className="flex items-center">
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {post.comments}
+                          </span>
+                          <span>{post.date}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
 
-              {/* 오른쪽 사이드바 */}
-              <div className="space-y-8">
-                {/* TOP5 */}
-                <div className="bg-white rounded-lg shadow p-6" id="top5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
-                      실시간 TOP 5
-                    </h3>
-                  </div>
+              {/* 오른쪽 컬럼 */}
+              <div className="space-y-6">
+                {/* 스케줄 섹션 */}
+                <section id="schedule" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Calendar className="w-6 h-6 mr-2 text-blue-600" />
+                    이번주 스케줄
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">📅 놓치면 안될 일정!</p>
+                  
                   <div className="space-y-3">
-                    {topArtists.map((artist) => (
-                      <div key={artist.rank} className="flex items-center space-x-3 py-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <span className={`font-bold w-6 text-center ${artist.rank <= 3 ? 'text-purple-600' : 'text-gray-400'}`}>
-                          {artist.rank}
-                        </span>
-                        <span className="text-lg">{artist.emoji}</span>
-                        <span className="flex-1 font-medium text-sm">{artist.name}</span>
-                        <span className={`text-xs ${artist.change === '▲' ? 'text-red-500' : artist.change === '▼' ? 'text-blue-500' : 'text-gray-400'}`}>
-                          {artist.change}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 스케줄 */}
-                <div className="bg-white rounded-lg shadow p-6" id="schedule">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-purple-600" />
-                      다가오는 일정
-                    </h3>
-                    <a href="#" className="text-sm text-purple-600 hover:underline">더보기 →</a>
-                  </div>
-                  <div className="space-y-3">
-                    {schedules.map((schedule, idx) => (
-                      <div key={idx} className="border-l-2 border-purple-300 pl-3 py-1 hover:bg-gray-50 cursor-pointer">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs font-bold text-purple-600">{schedule.date}</span>
-                          <span className="text-xs text-gray-400">{schedule.time}</span>
+                    {schedules.map((schedule, index) => (
+                      <div key={index} className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold text-purple-600">{schedule.date}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(schedule.type)}`}>
+                            {schedule.type === 'broadcast' ? '방송' : 
+                             schedule.type === 'concert' ? '콘서트' : 
+                             schedule.type === 'fanmeeting' ? '팬미팅' : '사인회'}
+                          </span>
                         </div>
-                        <p className="text-sm font-medium">{schedule.event}</p>
-                        <p className="text-xs text-gray-500">{schedule.location}</p>
+                        <p className="text-sm font-medium text-gray-800">{schedule.event}</p>
+                        <p className="text-xs text-gray-500">{schedule.time} · {schedule.location}</p>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                {/* 추천 아티스트 */}
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h3 className="text-lg font-bold mb-4 flex items-center">
-                    <ThumbsUp className="w-5 h-5 mr-2 text-purple-600" />
-                    추천 아티스트
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {['NewJeans', 'aespa', 'IVE', 'LE SSERAFIM', 'SEVENTEEN', 'Stray Kids', 'NMIXX', 'ITZY'].map((artist) => (
-                      <span key={artist} className="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium cursor-pointer hover:bg-purple-200">
-                        #{artist}
-                      </span>
+                {/* SNS 계정 모음 섹션 */}
+                <section id="sns" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Instagram className="w-6 h-6 mr-2 text-pink-500" />
+                    SNS 계정 모음
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">📱 공식 & 멤버 계정</p>
+                  
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {snsAccounts.map((group, index) => (
+                      <div key={index} className="border-b border-gray-100 pb-3 last:border-0">
+                        <h3 className="font-bold text-sm text-gray-800 mb-2">{group.name}</h3>
+                        
+                        {/* 공식 계정 */}
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          <a href={`https://instagram.com/${group.official.instagram}`} target="_blank" rel="noopener noreferrer" 
+                             className="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Instagram className="w-3 h-3 mr-1" />
+                            공식
+                          </a>
+                          <a href={`https://twitter.com/${group.official.twitter}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-black text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Twitter className="w-3 h-3 mr-1" />
+                            X
+                          </a>
+                          <a href={`https://youtube.com/${group.official.youtube}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-red-600 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Youtube className="w-3 h-3 mr-1" />
+                            YT
+                          </a>
+                          <a href={`https://tiktok.com/${group.official.tiktok}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-gray-900 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Music className="w-3 h-3 mr-1" />
+                            TT
+                          </a>
+                        </div>
+                        
+                        {/* 멤버 계정 */}
+                        {group.members.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {group.members.map((member, mIndex) => (
+                              <a 
+                                key={mIndex}
+                                href={`https://instagram.com/${member.instagram}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded hover:bg-pink-100 hover:text-pink-600 transition-colors"
+                              >
+                                {member.name}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
-                </div>
+                </section>
               </div>
             </div>
           </main>
 
-          {/* 푸터 */}
-          <footer className="bg-gray-800 text-white py-8 mt-8">
+          {/* Footer */}
+          <footer className="bg-gray-800 text-white py-6 mt-8">
             <div className="max-w-7xl mx-auto px-4 text-center">
-              <div className="flex items-center justify-center space-x-2 mb-4">
+              <div className="flex items-center justify-center space-x-2 mb-2">
                 <span className="text-2xl">🦆</span>
-                <span className="font-bold">The Duck Go</span>
+                <span className="font-bold">THE DUCK GO</span>
               </div>
-              <p className="text-sm text-gray-400 mb-2">Of the Deok, By the Deok, For the Deok</p>
-              <p className="text-xs text-gray-500">© 2024 TheDuckGo. All rights reserved.</p>
+              <p className="text-sm text-gray-400">Of the Deok, By the Deok, For the Deok</p>
+              <p className="text-xs text-gray-500 mt-2">© 2024 TheDuckGo. All rights reserved.</p>
             </div>
           </footer>
+
+          {/* 비디오 모달 */}
+          {selectedVideo && (
+            <div 
+              className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+              onClick={() => setSelectedVideo(null)}
+            >
+              <div 
+                className="bg-black rounded-xl overflow-hidden max-w-4xl w-full"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-3 bg-gray-900">
+                  <div>
+                    <h3 className="font-bold text-white">{selectedVideo.artist}</h3>
+                    <p className="text-sm text-gray-400">{selectedVideo.title}</p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedVideo(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="aspect-video">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1`}
+                    title={`${selectedVideo.artist} - ${selectedVideo.title}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
