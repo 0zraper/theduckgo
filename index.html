@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
@@ -24,6 +25,12 @@
   
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    // Supabase 클라이언트 초기화
+    const supabase = window.supabase.createClient(
+      'https://hhschqwevdhkarqkpsi.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmRoaGFycWtwc2kiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMjE5MTQwMywiZXhwIjoyMDQ3NzY3NDAzfQ.eyJpcGNhM2lQMC5EeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5ReVBjYTNpUTAuZXBjM2lQMC5sb1hOMllXSmhjMlVpTENKeVpXWWlPaUpvYUhOamFIRjNaWFprYUdoaGNuRnJjSE5wSWl3aWNtOXNaU0k2SW1GdWIyNGlMQ0pwWVhRaU9qRTNNekl4T1RFME1ETXNJbVY0Y0NJNk1qQTBOemMyTnpRd00zMC5EeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5SeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5UaElzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5HaDRIZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5wY2EzaVEw'
+    );
 
     // 아이콘 컴포넌트들
     const Play = ({ className, fill }) => (
@@ -180,13 +187,35 @@
       };
 
       const [voteData, setVoteData] = useState(loadVoteData);
+      const [schedules, setSchedules] = useState([]);
+      const [loadingSchedules, setLoadingSchedules] = useState(true);
 
       useEffect(() => {
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth() + 1;
         setResetDate(`${year}년 ${month}월`);
+        
+        // Supabase에서 스케줄 가져오기
+        fetchSchedules();
       }, []);
+      
+      const fetchSchedules = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('schedules')
+            .select('*')
+            .order('date', { ascending: true });
+          
+          if (error) throw error;
+          
+          setSchedules(data || []);
+        } catch (error) {
+          console.error('스케줄 로드 실패:', error);
+        } finally {
+          setLoadingSchedules(false);
+        }
+      };
 
       // 뮤직비디오 데이터
       const musicVideos = [
@@ -198,15 +227,6 @@
         { id: 6, artist: 'Stray Kids', title: 'Chk Chk Boom', videoId: '0P0aQreFs8w', views: '90M', date: '2024.07' },
         { id: 7, artist: 'NMIXX', title: 'DASH', videoId: '7UecFm_bSTU', views: '45M', date: '2024.01' },
         { id: 8, artist: 'ITZY', title: 'GOLD', videoId: 'eMk_0svqsnI', views: '55M', date: '2024.10' },
-      ];
-
-      // 스케줄 데이터
-      const schedules = [
-        { date: '11.20', time: '18:00', event: 'aespa 컴백쇼', type: 'broadcast', location: 'Mnet' },
-        { date: '11.21', time: '20:00', event: 'SEVENTEEN 팬미팅', type: 'fanmeeting', location: '잠실실내체육관' },
-        { date: '11.22', time: '19:00', event: 'IVE 콘서트', type: 'concert', location: '고척스카이돔' },
-        { date: '11.23', time: '15:00', event: 'NewJeans 사인회', type: 'fansign', location: '코엑스' },
-        { date: '11.24', time: '18:00', event: 'Stray Kids 음방', type: 'broadcast', location: 'KBS' },
       ];
 
       // SNS 계정 데이터
@@ -571,24 +591,37 @@
                     <Calendar className="w-6 h-6 mr-2 text-blue-600" />
                     이번주 스케줄
                   </h2>
-                  <p className="text-sm text-gray-600 mb-4">📅 놓치면 안될 일정!</p>
+                  <p className="text-sm text-gray-600 mb-4">📅 놓치면 안될 일정! (실시간 업데이트)</p>
                   
-                  <div className="space-y-3">
-                    {schedules.map((schedule, index) => (
-                      <div key={index} className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-purple-600">{schedule.date}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(schedule.type)}`}>
-                            {schedule.type === 'broadcast' ? '방송' : 
-                             schedule.type === 'concert' ? '콘서트' : 
-                             schedule.type === 'fanmeeting' ? '팬미팅' : '사인회'}
-                          </span>
+                  {loadingSchedules ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="animate-pulse">스케줄 로딩 중...</div>
+                    </div>
+                  ) : schedules.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      등록된 스케줄이 없습니다
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {schedules.map((schedule, index) => (
+                        <div key={schedule.id || index} className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-bold text-purple-600">{schedule.date}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(schedule.type)}`}>
+                              {schedule.type === 'broadcast' ? '방송' : 
+                               schedule.type === 'concert' ? '콘서트' : 
+                               schedule.type === 'fanmeeting' ? '팬미팅' : '사인회'}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-gray-800">{schedule.event}</p>
+                          {schedule.artist && (
+                            <p className="text-xs text-purple-600 font-medium">{schedule.artist}</p>
+                          )}
+                          <p className="text-xs text-gray-500">{schedule.time} · {schedule.location}</p>
                         </div>
-                        <p className="text-sm font-medium text-gray-800">{schedule.event}</p>
-                        <p className="text-xs text-gray-500">{schedule.time} · {schedule.location}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </section>
 
                 {/* SNS 계정 모음 섹션 */}
