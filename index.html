@@ -28,8 +28,8 @@
 
     // Supabase 클라이언트 초기화
     const supabase = window.supabase.createClient(
-      'https://hhschqwevdhkarqkpsi.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmRoaGFycWtwc2kiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczMjE5MTQwMywiZXhwIjoyMDQ3NzY3NDAzfQ.eyJpcGNhM2lQMC5EeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5ReVBjYTNpUTAuZXBjM2lQMC5sb1hOMllXSmhjMlVpTENKeVpXWWlPaUpvYUhOamFIRjNaWFprYUdoaGNuRnJjSE5wSWl3aWNtOXNaU0k2SW1GdWIyNGlMQ0pwWVhRaU9qRTNNekl4T1RFME1ETXNJbVY0Y0NJNk1qQTBOemMyTnpRd00zMC5EeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5SeUpqYTJVaU9pSkpVekkxTmlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKcGMzTWlPaUp6ZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5UaElzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5HaDRIZFhCaFltRnpaU0lzSW5KbFppSTZJbWhvYzJOb2NYZGxkbVJvYUdGeWNXdHdjMmtpTENKeWIyeGxJam9pWVc1dmJpSXNJbWxoZENJNk1UY3pNakU1TVRRd015d2laWGh3SWpveU1EUTNOU1EyTnpRd00zMC5wY2EzaVEw'
+      'https://hhschqwevdvhkarqkpsi.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2OTI3OTgsImV4cCI6MjA3OTI2ODc5OH0.E1xQxCLqyxr9TLe0iOXJqHb9p8Z-oV4fFfeMw5OrhG0'
     );
 
     // 아이콘 컴포넌트들
@@ -118,6 +118,7 @@
       const [user, setUser] = useState(null);
       const [showAuthModal, setShowAuthModal] = useState(false);
       const [showPostModal, setShowPostModal] = useState(false);
+      const [showIdolSuggestionModal, setShowIdolSuggestionModal] = useState(false);
       const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
 
       useEffect(() => {
@@ -141,12 +142,18 @@
         try {
           const { data, error } = await supabase
             .from('idols')
-            .select('*')
+            .select('id, name, song, "videoId", votes, color, created_at')
             .order('votes', { ascending: false});
           
           if (error) throw error;
           
-          setVoteData(data || []);
+          // videoId가 없으면 videoid로 매핑
+          const mappedData = (data || []).map(idol => ({
+            ...idol,
+            videoId: idol.videoId || idol.videoid
+          }));
+          
+          setVoteData(mappedData);
         } catch (error) {
           console.error('아이돌 로드 실패:', error);
         } finally {
@@ -419,7 +426,7 @@
             .insert([{
               name,
               song,
-              videoId,
+              "videoId": videoId,
               color,
               suggested_by: user.email,
               status: 'pending'
@@ -442,7 +449,7 @@
             .insert([{
               name: suggestion.name,
               song: suggestion.song,
-              videoId: suggestion.videoId,
+              "videoId": suggestion.videoId,
               color: suggestion.color,
               votes: 0
             }]);
@@ -645,8 +652,9 @@
                       </div>
                     </div>
                   </div>
-                )})}
-              </div>
+                  );
+                  })}
+                </div>
               )}
             </section>
 
@@ -743,39 +751,31 @@
                       {posts
                         .filter(post => activeCategory === 'all' || post.category === activeCategory)
                         .map((post) => (
-                        <div 
-                          key={post.id}
-                          className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <div className="flex items-center space-x-3 flex-1 min-w-0">
-                            <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(post.category)}`}>
-                              {categories.find(c => c.id === post.category)?.name}
-                            </span>
-                            <span className="text-sm text-gray-800 truncate flex items-center">
-                              {post.hot && <span className="text-red-500 mr-1">🔥</span>}
-                              {post.title}
-                            </span>
+                          <div 
+                            key={post.id}
+                            className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                              <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(post.category)}`}>
+                                {categories.find(c => c.id === post.category)?.name}
+                              </span>
+                              <span className="text-sm text-gray-800 truncate flex items-center">
+                                {post.hot && <span className="text-red-500 mr-1">🔥</span>}
+                                {post.title}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-3 text-xs text-gray-500 ml-2">
+                              <span>{post.author}</span>
+                              <span className="flex items-center">
+                                <MessageSquare className="w-3 h-3 mr-1" />
+                                {post.comments}
+                              </span>
+                              <span>{new Date(post.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-3 text-xs text-gray-500 ml-2">
-                            <span>{post.author}</span>
-                            <span className="flex items-center">
-                              <MessageSquare className="w-3 h-3 mr-1" />
-                              {post.comments}
-                            </span>
-                            <span>{new Date(post.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}</span>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
-                </section>
-                            {post.comments}
-                          </span>
-                          <span>{post.date}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </section>
               </div>
 
@@ -1296,13 +1296,19 @@
         try {
           const { data, error } = await supabase
             .from('idol_suggestions')
-            .select('*')
+            .select('id, name, song, "videoId", color, suggested_by, status, created_at')
             .eq('status', 'pending')
             .order('created_at', { ascending: false });
           
           if (error) throw error;
           
-          setSuggestions(data || []);
+          // videoId가 없으면 videoid로 매핑
+          const mappedData = (data || []).map(sug => ({
+            ...sug,
+            videoId: sug.videoId || sug.videoid
+          }));
+          
+          setSuggestions(mappedData);
         } catch (error) {
           console.error('제안 로드 실패:', error);
         } finally {
