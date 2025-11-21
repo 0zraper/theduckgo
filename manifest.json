@@ -1,0 +1,28 @@
+{
+  "name": "The Duck Go - 덕의 덕심투표",
+  "short_name": "Duck Go",
+  "description": "K-POP 아이돌 덕후들의 놀이터 - 실시간 덕심투표",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "music", "social"],
+  "lang": "ko-KR",
+  "dir": "ltr",
+  "scope": "/"
+}

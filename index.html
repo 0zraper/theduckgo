@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>THE DUCK GO - 덕의, 덕에 의한, 덕을 위한</title>
   <meta name="description" content="K-POP 아이돌 덕후들의 놀이터 - 뮤직비디오, 스케줄, 투표, SNS 모음">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#EA580C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="THE DUCK GO">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦆</text></svg>">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -1311,6 +1320,46 @@
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<TheDuckGo />);
+    
+    // Service Worker 등록 (PWA)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('ServiceWorker registration successful:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
+    
+    // PWA 설치 프롬프트
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // 설치 버튼 표시 (선택사항)
+      console.log('PWA 설치 가능!');
+    });
+    
+    // PWA 설치 함수 (나중에 버튼에 연결 가능)
+    window.installPWA = async () => {
+      if (!deferredPrompt) {
+        alert('이미 설치되었거나 설치할 수 없습니다.');
+        return;
+      }
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('PWA 설치 완료!');
+      }
+      
+      deferredPrompt = null;
+    };
   </script>
 </body>
 </html>
