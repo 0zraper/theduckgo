@@ -27,6 +27,16 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 3px; }
+    
+    /* 모바일 헤더 최적화 */
+    @media (max-width: 768px) {
+      .mobile-header { padding: 0.75rem 1rem !important; }
+      .mobile-logo { font-size: 1.125rem !important; }
+      .mobile-icon { width: 1.125rem !important; height: 1.125rem !important; }
+      .mobile-btn { padding: 0.375rem 0.75rem !important; font-size: 0.75rem !important; }
+      .mobile-nav { font-size: 0.75rem !important; gap: 0.75rem !important; }
+      .mobile-badge { width: 1rem !important; height: 1rem !important; font-size: 0.625rem !important; }
+    }
   </style>
 </head>
 <body>
@@ -203,37 +213,41 @@
         setUser(user);
         
         if (user) {
-          fetchMessages(user.email);
-          fetchNotifications(user.email);
-          fetchFriends(user.email);
+          fetchMessages(user.id);
+          fetchNotifications(user.id);
+          fetchFriends(user.id);
         }
       };
       
-      const fetchMessages = async (userEmail) => {
+      const fetchMessages = async (userId) => {
         try {
           const { data, error } = await supabase
             .from('messages')
-            .select('*')
-            .or(`from_user.eq.${userEmail},to_user.eq.${userEmail}`)
+            .select(`
+              *,
+              from_user:users!messages_from_user_id_fkey(nickname),
+              to_user:users!messages_to_user_id_fkey(nickname)
+            `)
+            .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
             .order('created_at', { ascending: false });
           
           if (error) throw error;
           setMessages(data || []);
           
           // 읽지 않은 메시지 개수
-          const unread = data?.filter(m => m.to_user === userEmail && !m.is_read).length || 0;
+          const unread = data?.filter(m => m.to_user_id === userId && !m.is_read).length || 0;
           setUnreadCount(unread);
         } catch (error) {
           console.error('메시지 로드 실패:', error);
         }
       };
       
-      const fetchNotifications = async (userEmail) => {
+      const fetchNotifications = async (userId) => {
         try {
           const { data, error } = await supabase
             .from('notifications')
             .select('*')
-            .eq('user_email', userEmail)
+            .eq('user_id', userId)
             .order('created_at', { ascending: false });
           
           if (error) throw error;
@@ -247,12 +261,16 @@
         }
       };
       
-      const fetchFriends = async (userEmail) => {
+      const fetchFriends = async (userId) => {
         try {
           const { data, error } = await supabase
             .from('friends')
-            .select('*')
-            .or(`user_email.eq.${userEmail},friend_email.eq.${userEmail}`);
+            .select(`
+              *,
+              user:users!friends_user_id_fkey(nickname),
+              friend:users!friends_friend_id_fkey(nickname)
+            `)
+            .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
           
           if (error) throw error;
           setFriends(data || []);
@@ -594,21 +612,21 @@
         }
       };
       
-      // 메시지 전송
-      const handleSendMessage = async (toUser, message) => {
+      // 메시지 전송 (닉네임으로)
+      const handleSendMessage = async (toUserId, message) => {
         if (!user || !message.trim()) return;
         
         try {
           const { error } = await supabase
             .from('messages')
             .insert({
-              from_user: user.email,
-              to_user: toUser,
+              from_user_id: user.id,
+              to_user_id: toUserId,
               message: message.trim()
             });
           
           if (error) throw error;
-          fetchMessages(user.email);
+          fetchMessages(user.id);
         } catch (error) {
           alert('메시지 전송 실패: ' + error.message);
         }
@@ -623,27 +641,39 @@
             .eq('id', messageId);
           
           if (error) throw error;
-          fetchMessages(user.email);
+          fetchMessages(user.id);
         } catch (error) {
           console.error('읽음 처리 실패:', error);
         }
       };
       
-      // 친구 요청
-      const handleAddFriend = async (friendEmail) => {
-        if (!user || !friendEmail.trim()) return;
-        
-        if (friendEmail === user.email) {
-          alert('자기 자신을 친구로 추가할 수 없습니다');
-          return;
-        }
+      // 친구 요청 (닉네임으로 검색)
+      const handleAddFriend = async (friendNickname) => {
+        if (!user || !friendNickname.trim()) return;
         
         try {
+          // 닉네임으로 사용자 찾기
+          const { data: friendUser, error: searchError } = await supabase
+            .from('users')
+            .select('id, nickname')
+            .eq('nickname', friendNickname.trim())
+            .single();
+          
+          if (searchError || !friendUser) {
+            alert('존재하지 않는 닉네임입니다');
+            return;
+          }
+          
+          if (friendUser.id === user.id) {
+            alert('자기 자신을 친구로 추가할 수 없습니다');
+            return;
+          }
+          
           const { error } = await supabase
             .from('friends')
             .insert({
-              user_email: user.email,
-              friend_email: friendEmail.trim(),
+              user_id: user.id,
+              friend_id: friendUser.id,
               status: 'pending'
             });
           
@@ -654,8 +684,8 @@
               throw error;
             }
           } else {
-            alert('친구 요청을 보냈습니다');
-            fetchFriends(user.email);
+            alert(`${friendUser.nickname}님에게 친구 요청을 보냈습니다`);
+            fetchFriends(user.id);
           }
         } catch (error) {
           alert('친구 추가 실패: ' + error.message);
@@ -671,7 +701,9 @@
             .eq('id', friendId);
           
           if (error) throw error;
-          fetchFriends(user.email);
+          alert('친구 요청을 수락했습니다');
+          fetchFriends(user.id);
+          fetchNotifications(user.id);
         } catch (error) {
           alert('수락 실패: ' + error.message);
         }
@@ -686,7 +718,9 @@
             .eq('id', friendId);
           
           if (error) throw error;
-          fetchFriends(user.email);
+          alert('친구 요청을 거절했습니다');
+          fetchFriends(user.id);
+          fetchNotifications(user.id);
         } catch (error) {
           alert('거절 실패: ' + error.message);
         }
@@ -701,7 +735,7 @@
             .eq('id', notificationId);
           
           if (error) throw error;
-          fetchNotifications(user.email);
+          fetchNotifications(user.id);
         } catch (error) {
           console.error('알림 읽음 처리 실패:', error);
         }
@@ -732,16 +766,16 @@
         <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50">
           {/* Header */}
           <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 text-white shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-4xl">🦆</span>
+                <div className="flex items-center space-x-2 md:space-x-3">
+                  <span className="text-2xl md:text-4xl">🦆</span>
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight">THE DUCK GO</h1>
-                    <p className="text-xs opacity-90">Of the Deok, By the Deok, For the Deok</p>
+                    <h1 className="text-base md:text-2xl font-bold tracking-tight">THE DUCK GO</h1>
+                    <p className="text-[10px] md:text-xs opacity-90 hidden sm:block">Of the Deok, By the Deok, For the Deok</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1 md:space-x-4">
                   <nav className="hidden md:flex space-x-6 text-sm font-medium">
                     <a href="#vote" className="hover:text-yellow-200 transition-colors">덕심투표</a>
                     <a href="#mv" className="hover:text-yellow-200 transition-colors">뮤직비디오</a>
@@ -750,27 +784,27 @@
                     <a href="#board" className="hover:text-yellow-200 transition-colors">게시판</a>
                   </nav>
                   {user ? (
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm hidden md:inline">{user.user_metadata?.nickname || user.email.split('@')[0]}</span>
+                    <div className="flex items-center space-x-1 md:space-x-3">
+                      <span className="text-xs md:text-sm hidden md:inline">{user.user_metadata?.nickname || user.email.split('@')[0]}</span>
                       
                       {/* 친구 아이콘 */}
                       <button 
                         onClick={() => setShowFriends(true)}
-                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        className="relative p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
                         title="친구"
                       >
-                        <Users className="w-5 h-5" />
+                        <Users className="w-4 h-4 md:w-5 md:h-5" />
                       </button>
                       
                       {/* 알림 아이콘 */}
                       <button 
                         onClick={() => setShowNotifications(true)}
-                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        className="relative p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
                         title="알림"
                       >
-                        <Bell className="w-5 h-5" />
+                        <Bell className="w-4 h-4 md:w-5 md:h-5" />
                         {notificationCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-red-500 text-white text-[10px] md:text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                             {notificationCount}
                           </span>
                         )}
@@ -779,26 +813,26 @@
                       {/* 메시지 아이콘 */}
                       <button 
                         onClick={() => setShowMessenger(true)}
-                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        className="relative p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
                         title="메시지"
                       >
-                        <MessageSquare className="w-5 h-5" />
+                        <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
                         {unreadCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-red-500 text-white text-[10px] md:text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                             {unreadCount}
                           </span>
                         )}
                       </button>
                       
-                      <button onClick={() => setShowAdminPage(true)} className="text-sm px-3 py-1 bg-purple-600 rounded hover:bg-purple-700 transition-colors">
+                      <button onClick={() => setShowAdminPage(true)} className="hidden md:block text-xs md:text-sm px-2 md:px-3 py-1 bg-purple-600 rounded hover:bg-purple-700 transition-colors">
                         관리자
                       </button>
-                      <button onClick={handleLogout} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
+                      <button onClick={handleLogout} className="text-xs md:text-sm px-2 md:px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
                         로그아웃
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
+                    <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="text-xs md:text-sm px-2 md:px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
                       로그인
                     </button>
                   )}
@@ -1597,63 +1631,68 @@
     
     // 메신저 모달
     function MessengerModal({ user, onClose, messages, onSendMessage, onMarkAsRead }) {
-      const [selectedUser, setSelectedUser] = React.useState(null);
+      const [selectedUserId, setSelectedUserId] = React.useState(null);
       const [messageText, setMessageText] = React.useState('');
       
-      // 대화 상대 목록
+      // 대화 상대 목록 (닉네임 기반)
       const conversations = React.useMemo(() => {
         const userMap = new Map();
         messages.forEach(msg => {
-          const otherUser = msg.from_user === user.email ? msg.to_user : msg.from_user;
-          if (!userMap.has(otherUser)) {
-            userMap.set(otherUser, {
-              email: otherUser,
+          const isFromMe = msg.from_user_id === user.id;
+          const otherUserId = isFromMe ? msg.to_user_id : msg.from_user_id;
+          const otherUserNickname = isFromMe ? msg.to_user?.nickname : msg.from_user?.nickname;
+          
+          if (!userMap.has(otherUserId)) {
+            userMap.set(otherUserId, {
+              id: otherUserId,
+              nickname: otherUserNickname || '알 수 없음',
               lastMessage: msg.message,
               lastTime: msg.created_at,
-              unread: msg.to_user === user.email && !msg.is_read ? 1 : 0
+              unread: !isFromMe && !msg.is_read ? 1 : 0
             });
           } else {
-            const existing = userMap.get(otherUser);
-            if (msg.to_user === user.email && !msg.is_read) {
+            const existing = userMap.get(otherUserId);
+            if (!isFromMe && !msg.is_read) {
               existing.unread++;
             }
           }
         });
         return Array.from(userMap.values());
-      }, [messages, user]);
+      }, [messages, user.id]);
       
       // 선택한 사용자와의 대화
       const chatMessages = React.useMemo(() => {
-        if (!selectedUser) return [];
+        if (!selectedUserId) return [];
         return messages
           .filter(m => 
-            (m.from_user === user.email && m.to_user === selectedUser) ||
-            (m.from_user === selectedUser && m.to_user === user.email)
+            (m.from_user_id === user.id && m.to_user_id === selectedUserId) ||
+            (m.from_user_id === selectedUserId && m.to_user_id === user.id)
           )
           .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      }, [messages, selectedUser, user]);
+      }, [messages, selectedUserId, user.id]);
+      
+      const selectedUserNickname = conversations.find(c => c.id === selectedUserId)?.nickname;
       
       const handleSend = () => {
-        if (selectedUser && messageText.trim()) {
-          onSendMessage(selectedUser, messageText);
+        if (selectedUserId && messageText.trim()) {
+          onSendMessage(selectedUserId, messageText);
           setMessageText('');
         }
       };
       
       React.useEffect(() => {
-        if (selectedUser) {
+        if (selectedUserId) {
           chatMessages.forEach(msg => {
-            if (msg.to_user === user.email && !msg.is_read) {
+            if (msg.to_user_id === user.id && !msg.is_read) {
               onMarkAsRead(msg.id);
             }
           });
         }
-      }, [selectedUser, chatMessages]);
+      }, [selectedUserId, chatMessages]);
       
       return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
           <div className="bg-white rounded-xl w-full max-w-4xl h-[600px] flex" onClick={e => e.stopPropagation()}>
-            {/* 대화 목록 */}
             <div className="w-1/3 border-r flex flex-col">
               <div className="p-4 border-b flex items-center justify-between">
                 <h2 className="font-bold">메시지</h2>
@@ -1667,12 +1706,12 @@
                 ) : (
                   conversations.map(conv => (
                     <div
-                      key={conv.email}
-                      onClick={() => setSelectedUser(conv.email)}
-                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedUser === conv.email ? 'bg-blue-50' : ''}`}
+                      key={conv.id}
+                      onClick={() => setSelectedUserId(conv.id)}
+                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedUserId === conv.id ? 'bg-blue-50' : ''}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="font-medium">{conv.email.split('@')[0]}</div>
+                        <div className="font-medium">{conv.nickname}</div>
                         {conv.unread > 0 && (
                           <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{conv.unread}</span>
                         )}
@@ -1684,17 +1723,16 @@
               </div>
             </div>
             
-            {/* 채팅창 */}
             <div className="flex-1 flex flex-col">
-              {selectedUser ? (
+              {selectedUserId ? (
                 <>
                   <div className="p-4 border-b">
-                    <div className="font-bold">{selectedUser.split('@')[0]}</div>
+                    <div className="font-bold">{selectedUserNickname}</div>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {chatMessages.map(msg => (
-                      <div key={msg.id} className={`flex ${msg.from_user === user.email ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.from_user === user.email ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                      <div key={msg.id} className={`flex ${msg.from_user_id === user.id ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.from_user_id === user.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
                           <div>{msg.message}</div>
                           <div className="text-xs opacity-70 mt-1">
                             {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
@@ -1769,17 +1807,17 @@
       );
     }
     
-    // 친구 모달
+    // 친구 모달 (닉네임 기반)
     function FriendsModal({ user, onClose, friends, onAddFriend, onAccept, onReject }) {
-      const [friendEmail, setFriendEmail] = React.useState('');
+      const [friendNickname, setFriendNickname] = React.useState('');
       
-      const myRequests = friends.filter(f => f.user_email === user.email);
-      const receivedRequests = friends.filter(f => f.friend_email === user.email && f.status === 'pending');
+      const myRequests = friends.filter(f => f.user_id === user.id);
+      const receivedRequests = friends.filter(f => f.friend_id === user.id && f.status === 'pending');
       const acceptedFriends = friends.filter(f => f.status === 'accepted');
       
       const handleAdd = () => {
-        onAddFriend(friendEmail);
-        setFriendEmail('');
+        onAddFriend(friendNickname);
+        setFriendNickname('');
       };
       
       return (
@@ -1796,10 +1834,11 @@
             <div className="mb-6">
               <div className="flex space-x-2">
                 <input
-                  type="email"
-                  value={friendEmail}
-                  onChange={(e) => setFriendEmail(e.target.value)}
-                  placeholder="친구 이메일 입력"
+                  type="text"
+                  value={friendNickname}
+                  onChange={(e) => setFriendNickname(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                  placeholder="친구 닉네임 입력"
                   className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button onClick={handleAdd} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
@@ -1812,11 +1851,11 @@
             {/* 받은 친구 요청 */}
             {receivedRequests.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-bold mb-2">받은 요청</h3>
+                <h3 className="font-bold mb-2 text-red-600">받은 요청 ({receivedRequests.length})</h3>
                 <div className="space-y-2">
                   {receivedRequests.map(req => (
-                    <div key={req.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                      <span>{req.user_email.split('@')[0]}</span>
+                    <div key={req.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border-2 border-yellow-300">
+                      <span className="font-medium">{req.user?.nickname || '알 수 없음'}</span>
                       <div className="flex space-x-2">
                         <button onClick={() => onAccept(req.id)} className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
                           수락
@@ -1839,10 +1878,10 @@
               ) : (
                 <div className="space-y-2">
                   {acceptedFriends.map(friend => {
-                    const friendEmail = friend.user_email === user.email ? friend.friend_email : friend.user_email;
+                    const friendNick = friend.user_id === user.id ? friend.friend?.nickname : friend.user?.nickname;
                     return (
                       <div key={friend.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span>{friendEmail.split('@')[0]}</span>
+                        <span>{friendNick || '알 수 없음'}</span>
                         <Check className="w-5 h-5 text-green-500" />
                       </div>
                     );
@@ -1858,7 +1897,7 @@
                 <div className="space-y-2">
                   {myRequests.filter(r => r.status === 'pending').map(req => (
                     <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span>{req.friend_email.split('@')[0]}</span>
+                      <span>{req.friend?.nickname || '알 수 없음'}</span>
                       <span className="text-sm text-gray-500">대기 중...</span>
                     </div>
                   ))}
