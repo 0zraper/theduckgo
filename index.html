@@ -1267,6 +1267,7 @@
               user={user}
               onClose={() => setShowMessenger(false)}
               messages={messages}
+              friends={friends}
               onSendMessage={handleSendMessage}
               onMarkAsRead={handleMarkMessageAsRead}
             />
@@ -1630,9 +1631,10 @@
     }
     
     // 메신저 모달
-    function MessengerModal({ user, onClose, messages, onSendMessage, onMarkAsRead }) {
+    function MessengerModal({ user, onClose, messages, friends, onSendMessage, onMarkAsRead }) {
       const [selectedUserId, setSelectedUserId] = React.useState(null);
       const [messageText, setMessageText] = React.useState('');
+      const [activeTab, setActiveTab] = React.useState('messages'); // 'messages' or 'friends'
       
       // 대화 상대 목록 (닉네임 기반)
       const conversations = React.useMemo(() => {
@@ -1641,6 +1643,37 @@
           const isFromMe = msg.from_user_id === user.id;
           const otherUserId = isFromMe ? msg.to_user_id : msg.from_user_id;
           const otherUserNickname = isFromMe ? msg.to_user?.nickname : msg.from_user?.nickname;
+          
+          if (!userMap.has(otherUserId)) {
+            userMap.set(otherUserId, {
+              id: otherUserId,
+              nickname: otherUserNickname || '알 수 없음',
+              lastMessage: msg.message,
+              lastTime: msg.created_at,
+              unread: !isFromMe && !msg.is_read ? 1 : 0
+            });
+          } else {
+            const existing = userMap.get(otherUserId);
+            if (!isFromMe && !msg.is_read) {
+              existing.unread++;
+            }
+          }
+        });
+        return Array.from(userMap.values());
+      }, [messages, user.id]);
+      
+      // 수락된 친구 목록
+      const acceptedFriends = React.useMemo(() => {
+        return friends
+          .filter(f => f.status === 'accepted')
+          .map(f => {
+            const friendData = f.user_id === user.id ? f.friend : f.user;
+            return {
+              id: friendData?.id,
+              nickname: friendData?.nickname || '알 수 없음'
+            };
+          });
+      }, [friends, user.id]);
           
           if (!userMap.has(otherUserId)) {
             userMap.set(otherUserId, {
@@ -1671,7 +1704,8 @@
           .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       }, [messages, selectedUserId, user.id]);
       
-      const selectedUserNickname = conversations.find(c => c.id === selectedUserId)?.nickname;
+      const selectedUserNickname = conversations.find(c => c.id === selectedUserId)?.nickname || 
+                                   acceptedFriends.find(f => f.id === selectedUserId)?.nickname;
       
       const handleSend = () => {
         if (selectedUserId && messageText.trim()) {
@@ -1694,22 +1728,44 @@
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
           <div className="bg-white rounded-xl w-full max-w-4xl h-[600px] flex" onClick={e => e.stopPropagation()}>
             <div className="w-1/3 border-r flex flex-col">
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-bold">메시지</h2>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-5 h-5" />
-                </button>
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-bold">메시지</h2>
+                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {/* 탭 버튼 */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === 'messages' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    대화목록
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('friends')}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                      activeTab === 'friends' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    친구 ({acceptedFriends.length})
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {conversations.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">메시지가 없습니다</div>
-                ) : (
-                  conversations.map(conv => (
-                    <div
-                      key={conv.id}
-                      onClick={() => setSelectedUserId(conv.id)}
-                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedUserId === conv.id ? 'bg-blue-50' : ''}`}
-                    >
+                {activeTab === 'messages' ? (
+                  conversations.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">메시지가 없습니다</div>
+                  ) : (
+                    conversations.map(conv => (
+                      <div
+                        key={conv.id}
+                        onClick={() => { setSelectedUserId(conv.id); setActiveTab('messages'); }}
+                        className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedUserId === conv.id ? 'bg-blue-50' : ''}`}
+                      >
                       <div className="flex items-center justify-between">
                         <div className="font-medium">{conv.nickname}</div>
                         {conv.unread > 0 && (
@@ -1719,6 +1775,22 @@
                       <div className="text-sm text-gray-500 truncate">{conv.lastMessage}</div>
                     </div>
                   ))
+                ) : (
+                  // 친구 탭
+                  acceptedFriends.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">친구가 없습니다</div>
+                  ) : (
+                    acceptedFriends.map(friend => (
+                      <div
+                        key={friend.id}
+                        onClick={() => { setSelectedUserId(friend.id); setActiveTab('messages'); }}
+                        className="p-4 border-b cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+                      >
+                        <span className="font-medium">{friend.nickname}</span>
+                        <MessageSquare className="w-4 h-4 text-gray-400" />
+                      </div>
+                    ))
+                  )
                 )}
               </div>
             </div>
