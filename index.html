@@ -584,14 +584,13 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase 초기화
-        const { createClient } = window.supabase;
-        const supabase = createClient(
-            'https://hhschqwevdvhkarqkpsi.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY'
-        );
+        // Supabase 초기화 (가장 기본 방식)
+        const supabaseUrl = 'https://hhschqwevdvhkarqkpsi.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         // 전역 변수
         let currentUser = null;
@@ -753,58 +752,27 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            if (!email || !password) {
-                showError('이메일과 비밀번호를 입력하세요.');
-                return;
-            }
-
             try {
-                // 이메일로 로그인
                 const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password,
                 });
 
-                if (signInError) {
-                    console.error('Sign in error:', signInError);
-                    showError('이메일 또는 비밀번호가 일치하지 않습니다.');
-                    return;
-                }
-
-                if (!authData.user) {
-                    showError('로그인에 실패했습니다.');
-                    return;
-                }
+                if (signInError) throw signInError;
 
                 // 사용자 정보 가져오기
-                const { data: userData, error: userError } = await supabase
+                const { data: userData } = await supabase
                     .from('users')
                     .select('id, nickname, email')
                     .eq('id', authData.user.id)
-                    .maybeSingle();
+                    .single();
 
-                if (userError) {
-                    console.error('User data error:', userError);
-                    showError('사용자 정보를 불러오지 못했습니다.');
-                    return;
-                }
-
-                if (!userData) {
-                    showError('사용자 정보가 없습니다.');
-                    return;
-                }
-
-                currentUser = {
-                    id: userData.id,
-                    nickname: userData.nickname,
-                    email: userData.email
-                };
-
+                currentUser = userData;
                 showMainApp();
                 
             } catch (error) {
                 console.error('Login error:', error);
-                showError('로그인 중 오류가 발생했습니다: ' + error.message);
+                showError('이메일 또는 비밀번호가 일치하지 않습니다.');
             }
         });
 
