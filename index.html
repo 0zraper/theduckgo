@@ -584,12 +584,13 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
     <script>
         // Supabase 초기화
-        const supabase = window.supabase.createClient(
+        const { createClient } = window.supabase;
+        const supabase = createClient(
             'https://hhschqwevdvhkarqkpsi.supabase.co',
-            'sb_publishable_qBIpwNZfa-Epir-vs0HtQW_ZU5IXthR'
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY'
         );
 
         // 전역 변수
