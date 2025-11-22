@@ -589,7 +589,17 @@
         // Supabase 초기화
         const supabaseUrl = 'https://hhschqwevdvhkarqkpsi.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+            },
+            realtime: {
+                params: {
+                    eventsPerSecond: 10
+                }
+            }
+        });
 
         // 전역 변수
         let currentUser = null;
@@ -668,6 +678,11 @@
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
 
+            if (!nickname || !email || !password) {
+                showError('모든 항목을 입력하세요.');
+                return;
+            }
+
             if (password.length < 6) {
                 showError('비밀번호는 6자 이상이어야 합니다.');
                 return;
@@ -675,11 +690,17 @@
 
             try {
                 // 닉네임 중복 확인
-                const { data: existingUser } = await supabase
+                const { data: existingUser, error: checkError } = await supabase
                     .from('users')
                     .select('nickname')
                     .eq('nickname', nickname)
-                    .single();
+                    .maybeSingle();
+
+                if (checkError && checkError.code !== 'PGRST116') {
+                    console.error('Nickname check error:', checkError);
+                    showError('닉네임 확인 중 오류가 발생했습니다.');
+                    return;
+                }
 
                 if (existingUser) {
                     showError('이미 사용 중인 닉네임입니다.');
@@ -692,7 +713,16 @@
                     password: password,
                 });
 
-                if (signUpError) throw signUpError;
+                if (signUpError) {
+                    console.error('Sign up error:', signUpError);
+                    showError('회원가입 실패: ' + signUpError.message);
+                    return;
+                }
+
+                if (!authData.user) {
+                    showError('회원가입에 실패했습니다.');
+                    return;
+                }
 
                 // users 테이블에 닉네임 저장
                 const { error: insertError } = await supabase
@@ -705,7 +735,11 @@
                         }
                     ]);
 
-                if (insertError) throw insertError;
+                if (insertError) {
+                    console.error('User insert error:', insertError);
+                    showError('사용자 정보 저장 실패: ' + insertError.message);
+                    return;
+                }
 
                 alert('가입이 완료되었습니다! 로그인해주세요.');
                 
@@ -715,7 +749,7 @@
                 
             } catch (error) {
                 console.error('Signup error:', error);
-                showError(error.message || '회원가입 중 오류가 발생했습니다.');
+                showError('회원가입 중 오류가 발생했습니다: ' + error.message);
             }
         });
 
@@ -727,15 +761,26 @@
             const nickname = document.getElementById('loginNickname').value.trim();
             const password = document.getElementById('loginPassword').value;
 
+            if (!nickname || !password) {
+                showError('닉네임과 비밀번호를 입력하세요.');
+                return;
+            }
+
             try {
                 // 닉네임으로 이메일 찾기
                 const { data: userData, error: userError } = await supabase
                     .from('users')
                     .select('email, id, nickname')
                     .eq('nickname', nickname)
-                    .single();
+                    .maybeSingle();
 
-                if (userError || !userData) {
+                if (userError) {
+                    console.error('User lookup error:', userError);
+                    showError('사용자 조회 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                if (!userData) {
                     showError('존재하지 않는 닉네임입니다.');
                     return;
                 }
@@ -747,6 +792,7 @@
                 });
 
                 if (signInError) {
+                    console.error('Sign in error:', signInError);
                     showError('비밀번호가 일치하지 않습니다.');
                     return;
                 }
@@ -761,7 +807,7 @@
                 
             } catch (error) {
                 console.error('Login error:', error);
-                showError('로그인 중 오류가 발생했습니다.');
+                showError('로그인 중 오류가 발생했습니다: ' + error.message);
             }
         });
 
@@ -1156,20 +1202,34 @@
         }
 
         // 세션 확인
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
+        supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
+            if (sessionError) {
+                console.error('Session error:', sessionError);
+                return;
+            }
+            
+            if (session && session.user) {
                 supabase
                     .from('users')
                     .select('id, nickname, email')
                     .eq('id', session.user.id)
-                    .single()
-                    .then(({ data }) => {
+                    .maybeSingle()
+                    .then(({ data, error }) => {
+                        if (error) {
+                            console.error('User data error:', error);
+                            return;
+                        }
                         if (data) {
                             currentUser = data;
                             showMainApp();
                         }
+                    })
+                    .catch(err => {
+                        console.error('Failed to load user data:', err);
                     });
             }
+        }).catch(err => {
+            console.error('Failed to get session:', err);
         });
     </script>
 </body>
