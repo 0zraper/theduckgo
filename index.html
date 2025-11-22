@@ -584,20 +584,17 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3"></script>
     <script>
-        // Supabase 초기화 (새로운 API 키 시스템)
+        // Supabase 초기화
         const supabaseUrl = 'https://hhschqwevdvhkarqkpsi.supabase.co';
-        const supabaseKey = 'sb_publishable_qBIpwWZfa-Epir-vs0HtQW_ZU5IXthR';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY';
+        
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
             auth: {
                 persistSession: true,
                 autoRefreshToken: true,
-            },
-            realtime: {
-                params: {
-                    eventsPerSecond: 10
-                }
+                detectSessionInUrl: true
             }
         });
 
