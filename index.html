@@ -463,8 +463,8 @@
             <!-- 로그인 폼 -->
             <form id="loginForm" class="auth-form active">
                 <div class="form-group">
-                    <label>닉네임</label>
-                    <input type="text" id="loginNickname" placeholder="닉네임을 입력하세요" required>
+                    <label>이메일</label>
+                    <input type="email" id="loginEmail" placeholder="이메일을 입력하세요" required>
                 </div>
                 <div class="form-group">
                     <label>비밀번호</label>
@@ -745,7 +745,7 @@
                 
                 // 로그인 탭으로 전환
                 document.querySelector('[data-tab="login"]').click();
-                document.getElementById('loginNickname').value = nickname;
+                document.getElementById('loginEmail').value = email;
                 
             } catch (error) {
                 console.error('Signup error:', error);
@@ -758,42 +758,47 @@
             e.preventDefault();
             hideError();
 
-            const nickname = document.getElementById('loginNickname').value.trim();
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
-            if (!nickname || !password) {
-                showError('닉네임과 비밀번호를 입력하세요.');
+            if (!email || !password) {
+                showError('이메일과 비밀번호를 입력하세요.');
                 return;
             }
 
             try {
-                // 닉네임으로 이메일 찾기
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('email, id, nickname')
-                    .eq('nickname', nickname)
-                    .maybeSingle();
-
-                if (userError) {
-                    console.error('User lookup error:', userError);
-                    showError('사용자 조회 중 오류가 발생했습니다.');
-                    return;
-                }
-
-                if (!userData) {
-                    showError('존재하지 않는 닉네임입니다.');
-                    return;
-                }
-
                 // 이메일로 로그인
                 const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email: userData.email,
+                    email: email,
                     password: password,
                 });
 
                 if (signInError) {
                     console.error('Sign in error:', signInError);
-                    showError('비밀번호가 일치하지 않습니다.');
+                    showError('이메일 또는 비밀번호가 일치하지 않습니다.');
+                    return;
+                }
+
+                if (!authData.user) {
+                    showError('로그인에 실패했습니다.');
+                    return;
+                }
+
+                // 사용자 정보 가져오기
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('id, nickname, email')
+                    .eq('id', authData.user.id)
+                    .maybeSingle();
+
+                if (userError) {
+                    console.error('User data error:', userError);
+                    showError('사용자 정보를 불러오지 못했습니다.');
+                    return;
+                }
+
+                if (!userData) {
+                    showError('사용자 정보가 없습니다.');
                     return;
                 }
 
