@@ -660,7 +660,7 @@
             errorMessage.style.display = 'none';
         }
 
-        // 회원가입
+        // 회원가입 (Supabase Auth 제거, 직접 구현)
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideError();
@@ -681,54 +681,43 @@
 
             try {
                 // 닉네임 중복 확인
-                const { data: existingUser, error: checkError } = await supabase
+                const { data: nicknameCheck } = await supabase
                     .from('users')
                     .select('nickname')
                     .eq('nickname', nickname)
                     .maybeSingle();
 
-                if (checkError && checkError.code !== 'PGRST116') {
-                    console.error('Nickname check error:', checkError);
-                    showError('닉네임 확인 중 오류가 발생했습니다.');
-                    return;
-                }
-
-                if (existingUser) {
+                if (nicknameCheck) {
                     showError('이미 사용 중인 닉네임입니다.');
                     return;
                 }
 
-                // 회원가입
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                });
-
-                if (signUpError) {
-                    console.error('Sign up error:', signUpError);
-                    showError('회원가입 실패: ' + signUpError.message);
-                    return;
-                }
-
-                if (!authData.user) {
-                    showError('회원가입에 실패했습니다.');
-                    return;
-                }
-
-                // users 테이블에 닉네임 저장
-                const { error: insertError } = await supabase
+                // 이메일 중복 확인
+                const { data: emailCheck } = await supabase
                     .from('users')
-                    .insert([
-                        {
-                            id: authData.user.id,
-                            email: email,
-                            nickname: nickname
-                        }
-                    ]);
+                    .select('email')
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (emailCheck) {
+                    showError('이미 사용 중인 이메일입니다.');
+                    return;
+                }
+
+                // 사용자 생성 (평문 비밀번호 저장)
+                const { data: newUser, error: insertError } = await supabase
+                    .from('users')
+                    .insert([{
+                        email: email,
+                        password: password,
+                        nickname: nickname
+                    }])
+                    .select()
+                    .single();
 
                 if (insertError) {
-                    console.error('User insert error:', insertError);
-                    showError('사용자 정보 저장 실패: ' + insertError.message);
+                    console.error('Insert error:', insertError);
+                    showError('회원가입 실패: ' + insertError.message);
                     return;
                 }
 
@@ -744,7 +733,7 @@
             }
         });
 
-        // 로그인
+        // 로그인 (Supabase Auth 제거, 직접 구현)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             hideError();
@@ -753,46 +742,50 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (signInError) throw signInError;
-
-                // 사용자 정보 가져오기
-                const { data: userData } = await supabase
+                // 이메일과 비밀번호로 사용자 조회
+                const { data: userData, error: loginError } = await supabase
                     .from('users')
-                    .select('id, nickname, email')
-                    .eq('id', authData.user.id)
-                    .single();
+                    .select('id, nickname, email, password')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .maybeSingle();
 
-                currentUser = userData;
+                if (loginError) {
+                    console.error('Login error:', loginError);
+                    showError('로그인 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                if (!userData) {
+                    showError('이메일 또는 비밀번호가 일치하지 않습니다.');
+                    return;
+                }
+
+                currentUser = {
+                    id: userData.id,
+                    nickname: userData.nickname,
+                    email: userData.email
+                };
+                
                 showMainApp();
                 
             } catch (error) {
                 console.error('Login error:', error);
-                showError('이메일 또는 비밀번호가 일치하지 않습니다.');
+                showError('로그인 중 오류가 발생했습니다.');
             }
         });
 
-        // 로그아웃
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await supabase.auth.signOut();
-                currentUser = null;
-                currentChatFriend = null;
-                
-                if (messageSubscription) {
-                    messageSubscription.unsubscribe();
-                }
-                
-                authContainer.style.display = 'block';
-                mainApp.style.display = 'none';
-                
-            } catch (error) {
-                console.error('Logout error:', error);
+        // 로그아웃 (Auth 제거)
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            currentUser = null;
+            currentChatFriend = null;
+            
+            if (messageSubscription) {
+                messageSubscription.unsubscribe();
             }
+            
+            authContainer.style.display = 'block';
+            mainApp.style.display = 'none';
         });
 
         // 메인 앱 표시
