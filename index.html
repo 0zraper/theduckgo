@@ -118,6 +118,44 @@
         <circle cx="12" cy="12" r="3"></circle>
       </svg>
     );
+    
+    const Bell = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    );
+    
+    const Users = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    );
+    
+    const Send = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    );
+    
+    const UserPlus = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+    );
+    
+    const Check = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
 
     function TheDuckGo() {
       const [selectedVideo, setSelectedVideo] = useState(null);
@@ -136,7 +174,17 @@
       const [showPostModal, setShowPostModal] = useState(false);
       const [showIdolSuggestionModal, setShowIdolSuggestionModal] = useState(false);
       const [selectedPost, setSelectedPost] = useState(null);
-      const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
+      const [authMode, setAuthMode] = useState('login');
+      
+      // 메신저 & 알림 & 친구
+      const [showMessenger, setShowMessenger] = useState(false);
+      const [showNotifications, setShowNotifications] = useState(false);
+      const [showFriends, setShowFriends] = useState(false);
+      const [messages, setMessages] = useState([]);
+      const [notifications, setNotifications] = useState([]);
+      const [friends, setFriends] = useState([]);
+      const [unreadCount, setUnreadCount] = useState(0);
+      const [notificationCount, setNotificationCount] = useState(0);
 
       useEffect(() => {
         const now = new Date();
@@ -153,6 +201,64 @@
       const checkUser = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
+        
+        if (user) {
+          fetchMessages(user.email);
+          fetchNotifications(user.email);
+          fetchFriends(user.email);
+        }
+      };
+      
+      const fetchMessages = async (userEmail) => {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .or(`from_user.eq.${userEmail},to_user.eq.${userEmail}`)
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          setMessages(data || []);
+          
+          // 읽지 않은 메시지 개수
+          const unread = data?.filter(m => m.to_user === userEmail && !m.is_read).length || 0;
+          setUnreadCount(unread);
+        } catch (error) {
+          console.error('메시지 로드 실패:', error);
+        }
+      };
+      
+      const fetchNotifications = async (userEmail) => {
+        try {
+          const { data, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_email', userEmail)
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          setNotifications(data || []);
+          
+          // 읽지 않은 알림 개수
+          const unread = data?.filter(n => !n.is_read).length || 0;
+          setNotificationCount(unread);
+        } catch (error) {
+          console.error('알림 로드 실패:', error);
+        }
+      };
+      
+      const fetchFriends = async (userEmail) => {
+        try {
+          const { data, error } = await supabase
+            .from('friends')
+            .select('*')
+            .or(`user_email.eq.${userEmail},friend_email.eq.${userEmail}`);
+          
+          if (error) throw error;
+          setFriends(data || []);
+        } catch (error) {
+          console.error('친구 목록 로드 실패:', error);
+        }
       };
       
       const fetchIdols = async () => {
@@ -487,6 +593,119 @@
           alert('거부 실패: ' + error.message);
         }
       };
+      
+      // 메시지 전송
+      const handleSendMessage = async (toUser, message) => {
+        if (!user || !message.trim()) return;
+        
+        try {
+          const { error } = await supabase
+            .from('messages')
+            .insert({
+              from_user: user.email,
+              to_user: toUser,
+              message: message.trim()
+            });
+          
+          if (error) throw error;
+          fetchMessages(user.email);
+        } catch (error) {
+          alert('메시지 전송 실패: ' + error.message);
+        }
+      };
+      
+      // 메시지 읽음 처리
+      const handleMarkMessageAsRead = async (messageId) => {
+        try {
+          const { error } = await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .eq('id', messageId);
+          
+          if (error) throw error;
+          fetchMessages(user.email);
+        } catch (error) {
+          console.error('읽음 처리 실패:', error);
+        }
+      };
+      
+      // 친구 요청
+      const handleAddFriend = async (friendEmail) => {
+        if (!user || !friendEmail.trim()) return;
+        
+        if (friendEmail === user.email) {
+          alert('자기 자신을 친구로 추가할 수 없습니다');
+          return;
+        }
+        
+        try {
+          const { error } = await supabase
+            .from('friends')
+            .insert({
+              user_email: user.email,
+              friend_email: friendEmail.trim(),
+              status: 'pending'
+            });
+          
+          if (error) {
+            if (error.code === '23505') {
+              alert('이미 친구 요청을 보냈습니다');
+            } else {
+              throw error;
+            }
+          } else {
+            alert('친구 요청을 보냈습니다');
+            fetchFriends(user.email);
+          }
+        } catch (error) {
+          alert('친구 추가 실패: ' + error.message);
+        }
+      };
+      
+      // 친구 요청 수락
+      const handleAcceptFriend = async (friendId) => {
+        try {
+          const { error } = await supabase
+            .from('friends')
+            .update({ status: 'accepted' })
+            .eq('id', friendId);
+          
+          if (error) throw error;
+          fetchFriends(user.email);
+        } catch (error) {
+          alert('수락 실패: ' + error.message);
+        }
+      };
+      
+      // 친구 요청 거절
+      const handleRejectFriend = async (friendId) => {
+        try {
+          const { error } = await supabase
+            .from('friends')
+            .delete()
+            .eq('id', friendId);
+          
+          if (error) throw error;
+          fetchFriends(user.email);
+        } catch (error) {
+          alert('거절 실패: ' + error.message);
+        }
+      };
+      
+      // 알림 읽음 처리
+      const handleMarkNotificationAsRead = async (notificationId) => {
+        try {
+          const { error } = await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .eq('id', notificationId);
+          
+          if (error) throw error;
+          fetchNotifications(user.email);
+        } catch (error) {
+          console.error('알림 읽음 처리 실패:', error);
+        }
+      };
 
       const getTypeColor = (type) => {
         switch(type) {
@@ -533,6 +752,44 @@
                   {user ? (
                     <div className="flex items-center space-x-3">
                       <span className="text-sm hidden md:inline">{user.user_metadata?.nickname || user.email.split('@')[0]}</span>
+                      
+                      {/* 친구 아이콘 */}
+                      <button 
+                        onClick={() => setShowFriends(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="친구"
+                      >
+                        <Users className="w-5 h-5" />
+                      </button>
+                      
+                      {/* 알림 아이콘 */}
+                      <button 
+                        onClick={() => setShowNotifications(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="알림"
+                      >
+                        <Bell className="w-5 h-5" />
+                        {notificationCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {notificationCount}
+                          </span>
+                        )}
+                      </button>
+                      
+                      {/* 메시지 아이콘 */}
+                      <button 
+                        onClick={() => setShowMessenger(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="메시지"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      
                       <button onClick={() => setShowAdminPage(true)} className="text-sm px-3 py-1 bg-purple-600 rounded hover:bg-purple-700 transition-colors">
                         관리자
                       </button>
@@ -970,6 +1227,38 @@
             />
           )}
           
+          {/* 메신저 모달 */}
+          {showMessenger && user && (
+            <MessengerModal 
+              user={user}
+              onClose={() => setShowMessenger(false)}
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              onMarkAsRead={handleMarkMessageAsRead}
+            />
+          )}
+          
+          {/* 알림 모달 */}
+          {showNotifications && (
+            <NotificationsModal 
+              onClose={() => setShowNotifications(false)}
+              notifications={notifications}
+              onMarkAsRead={handleMarkNotificationAsRead}
+            />
+          )}
+          
+          {/* 친구 모달 */}
+          {showFriends && user && (
+            <FriendsModal 
+              user={user}
+              onClose={() => setShowFriends(false)}
+              friends={friends}
+              onAddFriend={handleAddFriend}
+              onAccept={handleAcceptFriend}
+              onReject={handleRejectFriend}
+            />
+          )}
+          
           {/* 관리자 페이지 */}
           {showAdminPage && (
             <AdminPage 
@@ -1301,6 +1590,281 @@
                 닫기
               </button>
             </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 메신저 모달
+    function MessengerModal({ user, onClose, messages, onSendMessage, onMarkAsRead }) {
+      const [selectedUser, setSelectedUser] = React.useState(null);
+      const [messageText, setMessageText] = React.useState('');
+      
+      // 대화 상대 목록
+      const conversations = React.useMemo(() => {
+        const userMap = new Map();
+        messages.forEach(msg => {
+          const otherUser = msg.from_user === user.email ? msg.to_user : msg.from_user;
+          if (!userMap.has(otherUser)) {
+            userMap.set(otherUser, {
+              email: otherUser,
+              lastMessage: msg.message,
+              lastTime: msg.created_at,
+              unread: msg.to_user === user.email && !msg.is_read ? 1 : 0
+            });
+          } else {
+            const existing = userMap.get(otherUser);
+            if (msg.to_user === user.email && !msg.is_read) {
+              existing.unread++;
+            }
+          }
+        });
+        return Array.from(userMap.values());
+      }, [messages, user]);
+      
+      // 선택한 사용자와의 대화
+      const chatMessages = React.useMemo(() => {
+        if (!selectedUser) return [];
+        return messages
+          .filter(m => 
+            (m.from_user === user.email && m.to_user === selectedUser) ||
+            (m.from_user === selectedUser && m.to_user === user.email)
+          )
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      }, [messages, selectedUser, user]);
+      
+      const handleSend = () => {
+        if (selectedUser && messageText.trim()) {
+          onSendMessage(selectedUser, messageText);
+          setMessageText('');
+        }
+      };
+      
+      React.useEffect(() => {
+        if (selectedUser) {
+          chatMessages.forEach(msg => {
+            if (msg.to_user === user.email && !msg.is_read) {
+              onMarkAsRead(msg.id);
+            }
+          });
+        }
+      }, [selectedUser, chatMessages]);
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl w-full max-w-4xl h-[600px] flex" onClick={e => e.stopPropagation()}>
+            {/* 대화 목록 */}
+            <div className="w-1/3 border-r flex flex-col">
+              <div className="p-4 border-b flex items-center justify-between">
+                <h2 className="font-bold">메시지</h2>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {conversations.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">메시지가 없습니다</div>
+                ) : (
+                  conversations.map(conv => (
+                    <div
+                      key={conv.email}
+                      onClick={() => setSelectedUser(conv.email)}
+                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedUser === conv.email ? 'bg-blue-50' : ''}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">{conv.email.split('@')[0]}</div>
+                        {conv.unread > 0 && (
+                          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">{conv.unread}</span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-500 truncate">{conv.lastMessage}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            
+            {/* 채팅창 */}
+            <div className="flex-1 flex flex-col">
+              {selectedUser ? (
+                <>
+                  <div className="p-4 border-b">
+                    <div className="font-bold">{selectedUser.split('@')[0]}</div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {chatMessages.map(msg => (
+                      <div key={msg.id} className={`flex ${msg.from_user === user.email ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.from_user === user.email ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                          <div>{msg.message}</div>
+                          <div className="text-xs opacity-70 mt-1">
+                            {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-4 border-t flex space-x-2">
+                    <input
+                      type="text"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                      placeholder="메시지 입력..."
+                      className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button onClick={handleSend} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                  대화를 선택하세요
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 알림 모달
+    function NotificationsModal({ onClose, notifications, onMarkAsRead }) {
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full max-h-[600px] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">알림</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {notifications.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">알림이 없습니다</div>
+            ) : (
+              <div className="space-y-2">
+                {notifications.map(notif => (
+                  <div
+                    key={notif.id}
+                    onClick={() => onMarkAsRead(notif.id)}
+                    className={`p-3 rounded-lg cursor-pointer ${notif.is_read ? 'bg-gray-50' : 'bg-blue-50'}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium">{notif.title}</div>
+                        <div className="text-sm text-gray-600 mt-1">{notif.message}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {new Date(notif.created_at).toLocaleString('ko-KR')}
+                        </div>
+                      </div>
+                      {!notif.is_read && <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-2"></div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // 친구 모달
+    function FriendsModal({ user, onClose, friends, onAddFriend, onAccept, onReject }) {
+      const [friendEmail, setFriendEmail] = React.useState('');
+      
+      const myRequests = friends.filter(f => f.user_email === user.email);
+      const receivedRequests = friends.filter(f => f.friend_email === user.email && f.status === 'pending');
+      const acceptedFriends = friends.filter(f => f.status === 'accepted');
+      
+      const handleAdd = () => {
+        onAddFriend(friendEmail);
+        setFriendEmail('');
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[600px] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">친구</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {/* 친구 추가 */}
+            <div className="mb-6">
+              <div className="flex space-x-2">
+                <input
+                  type="email"
+                  value={friendEmail}
+                  onChange={(e) => setFriendEmail(e.target.value)}
+                  placeholder="친구 이메일 입력"
+                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button onClick={handleAdd} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
+                  <UserPlus className="w-5 h-5 mr-1" />
+                  추가
+                </button>
+              </div>
+            </div>
+            
+            {/* 받은 친구 요청 */}
+            {receivedRequests.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-bold mb-2">받은 요청</h3>
+                <div className="space-y-2">
+                  {receivedRequests.map(req => (
+                    <div key={req.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                      <span>{req.user_email.split('@')[0]}</span>
+                      <div className="flex space-x-2">
+                        <button onClick={() => onAccept(req.id)} className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                          수락
+                        </button>
+                        <button onClick={() => onReject(req.id)} className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                          거절
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* 친구 목록 */}
+            <div>
+              <h3 className="font-bold mb-2">친구 목록 ({acceptedFriends.length})</h3>
+              {acceptedFriends.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">친구가 없습니다</div>
+              ) : (
+                <div className="space-y-2">
+                  {acceptedFriends.map(friend => {
+                    const friendEmail = friend.user_email === user.email ? friend.friend_email : friend.user_email;
+                    return (
+                      <div key={friend.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span>{friendEmail.split('@')[0]}</span>
+                        <Check className="w-5 h-5 text-green-500" />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* 보낸 요청 */}
+            {myRequests.filter(r => r.status === 'pending').length > 0 && (
+              <div className="mt-6">
+                <h3 className="font-bold mb-2">보낸 요청</h3>
+                <div className="space-y-2">
+                  {myRequests.filter(r => r.status === 'pending').map(req => (
+                    <div key={req.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span>{req.friend_email.split('@')[0]}</span>
+                      <span className="text-sm text-gray-500">대기 중...</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
