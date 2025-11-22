@@ -111,6 +111,13 @@
         <circle cx="18" cy="16" r="3"></circle>
       </svg>
     );
+    
+    const Eye = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    );
 
     function TheDuckGo() {
       const [selectedVideo, setSelectedVideo] = useState(null);
@@ -128,6 +135,7 @@
       const [showAuthModal, setShowAuthModal] = useState(false);
       const [showPostModal, setShowPostModal] = useState(false);
       const [showIdolSuggestionModal, setShowIdolSuggestionModal] = useState(false);
+      const [selectedPost, setSelectedPost] = useState(null);
       const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
 
       useEffect(() => {
@@ -747,6 +755,7 @@
                         .map((post) => (
                           <div 
                             key={post.id}
+                            onClick={() => setSelectedPost(post)}
                             className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -950,6 +959,14 @@
             <IdolSuggestionModal 
               onClose={() => setShowIdolSuggestionModal(false)}
               onSuggest={handleSuggestIdol}
+            />
+          )}
+          
+          {/* 게시글 상세보기 모달 */}
+          {selectedPost && (
+            <PostDetailModal 
+              post={selectedPost}
+              onClose={() => setSelectedPost(null)}
             />
           )}
           
@@ -1211,6 +1228,79 @@
                 제안하기
               </button>
             </form>
+          </div>
+        </div>
+      );
+    }
+    
+    // 게시글 상세보기 모달 컴포넌트
+    function PostDetailModal({ post, onClose }) {
+      const getCategoryColor = (category) => {
+        const colors = {
+          notice: 'bg-red-100 text-red-600',
+          news: 'bg-blue-100 text-blue-600',
+          request: 'bg-green-100 text-green-600',
+          free: 'bg-gray-100 text-gray-600',
+          qna: 'bg-purple-100 text-purple-600'
+        };
+        return colors[category] || 'bg-gray-100 text-gray-600';
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <span className={`text-xs px-2 py-1 rounded ${getCategoryColor(post.category)}`}>
+                  {post.category === 'notice' ? '공지' :
+                   post.category === 'news' ? '소식' :
+                   post.category === 'request' ? '요청' :
+                   post.category === 'free' ? '자유' : '질문답변'}
+                </span>
+                {post.hot && <span className="text-red-500">🔥 HOT</span>}
+              </div>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{post.title}</h2>
+            
+            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-3 mb-6">
+              <div className="flex items-center space-x-4">
+                <span className="font-medium">{post.author}</span>
+                <span>{new Date(post.created_at).toLocaleString('ko-KR', { 
+                  year: 'numeric', 
+                  month: '2-digit', 
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="flex items-center">
+                  <Eye className="w-4 h-4 mr-1" />
+                  {post.views || 0}
+                </span>
+                <span className="flex items-center">
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  {post.comments}
+                </span>
+              </div>
+            </div>
+            
+            <div className="prose max-w-none">
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t">
+              <button 
+                onClick={onClose}
+                className="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       );
