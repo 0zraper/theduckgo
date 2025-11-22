@@ -584,19 +584,18 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabaseClient.min.js"></script>
     <script>
-        // Supabase 초기화
-        const supabaseUrl = 'https://hhschqwevdvhkarqkpsi.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY';
+        // Supabase 초기화 - 최소 설정
+        const { createClient } = supabase;
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true
-            }
-        });
+        const SUPABASE_URL = 'https://hhschqwevdvhkarqkpsi.supabaseClient.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIyNDEzMjQsImV4cCI6MjA0NzgxNzMyNH0.r5tg4iL1aW7mxN4kN99EtqHuWQZPh_sXjLaOV10HSTY';
+        
+        const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // 전역 변수로 설정
+        window.supabaseClient = _supabase;
 
         // 전역 변수
         let currentUser = null;
@@ -705,7 +704,7 @@
                 }
 
                 // 회원가입
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
+                const { data: authData, error: signUpError } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                 });
@@ -765,7 +764,7 @@
 
             try {
                 // 이메일로 로그인
-                const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+                const { data: authData, error: signInError } = await supabaseClient.auth.signInWithPassword({
                     email: email,
                     password: password,
                 });
@@ -816,7 +815,7 @@
         // 로그아웃
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             try {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 currentUser = null;
                 currentChatFriend = null;
                 
@@ -1204,7 +1203,7 @@
         }
 
         // 세션 확인
-        supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
+        supabaseClient.auth.getSession().then(({ data: { session }, error: sessionError }) => {
             if (sessionError) {
                 console.error('Session error:', sessionError);
                 return;
