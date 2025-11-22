@@ -752,14 +752,31 @@
 
                 if (signInError) throw signInError;
 
+                console.log('Auth success, user ID:', authData.user.id);
+
                 // 사용자 정보 가져오기
-                const { data: userData } = await supabase
+                const { data: userData, error: userError } = await supabase
                     .from('users')
                     .select('id, nickname, email')
                     .eq('id', authData.user.id)
                     .single();
 
+                console.log('User data:', userData);
+                console.log('User error:', userError);
+
+                if (userError) {
+                    console.error('User fetch error:', userError);
+                    showError('사용자 정보를 가져올 수 없습니다: ' + userError.message);
+                    return;
+                }
+
+                if (!userData) {
+                    showError('사용자 정보가 없습니다.');
+                    return;
+                }
+
                 currentUser = userData;
+                console.log('Current user set:', currentUser);
                 showMainApp();
                 
             } catch (error) {
