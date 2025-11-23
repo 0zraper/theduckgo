@@ -830,16 +830,16 @@
         <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50">
           {/* Header */}
           <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 text-white shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-4xl">🐥</span>
+                <div className="flex items-center space-x-2 md:space-x-3">
+                  <span className="text-2xl md:text-4xl">🐥</span>
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight">THE DUCK GO</h1>
-                    <p className="text-xs opacity-90">Of the Deok, By the Deok, For the Deok</p>
+                    <h1 className="text-lg md:text-2xl font-bold tracking-tight">THE DUCK GO</h1>
+                    <p className="text-[10px] md:text-xs opacity-90 hidden sm:block">Of the Deok, By the Deok, For the Deok</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 md:space-x-4">
                   <nav className="hidden md:flex space-x-6 text-sm font-medium">
                     <a href="#vote" className="hover:text-yellow-200 transition-colors">덕심투표</a>
                     <a href="#mv" className="hover:text-yellow-200 transition-colors">뮤직비디오</a>
@@ -848,25 +848,25 @@
                     <a href="#board" className="hover:text-yellow-200 transition-colors">게시판</a>
                   </nav>
                   {user ? (
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm hidden md:inline">{user.nickname || user.email.split('@')[0]}</span>
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <span className="text-xs md:text-sm hidden md:inline">{user.nickname || user.email.split('@')[0]}</span>
                       
                       {/* 친구 아이콘 */}
                       <button 
                         onClick={() => setShowFriends(true)}
-                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        className="relative p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
                         title="친구"
                       >
-                        <Users className="w-5 h-5" />
+                        <Users className="w-4 h-4 md:w-5 md:h-5" />
                       </button>
                       
                       {/* 알림 아이콘 */}
                       <button 
                         onClick={() => setShowNotifications(true)}
-                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        className="relative p-1.5 md:p-2 hover:bg-white/20 rounded-lg transition-colors"
                         title="알림"
                       >
-                        <Bell className="w-5 h-5" />
+                        <Bell className="w-4 h-4 md:w-5 md:h-5" />
                         {notificationCount > 0 && (
                           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                             {notificationCount}
@@ -906,27 +906,27 @@
           </header>
 
           {/* Hero Banner */}
-          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-8">
-            <div className="max-w-7xl mx-auto px-4 text-center">
-              <h2 className="text-3xl font-bold mb-2">🐥 덕의, 덕에 의한, 덕을 위한</h2>
-              <p className="text-lg opacity-90 mb-2">K-POP 아이돌 덕후들의 놀이터</p>
-              <p className="text-sm opacity-75">
+          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-4 md:py-8">
+            <div className="max-w-7xl mx-auto px-3 md:px-4 text-center">
+              <h2 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">🐥 덕의, 덕에 의한, 덕을 위한</h2>
+              <p className="text-sm md:text-lg opacity-90 mb-1 md:mb-2">K-POP 아이돌 덕후들의 놀이터</p>
+              <p className="text-xs md:text-sm opacity-75">
                 "덕(Duck)"은 오리, "덕(Deok)"은 덕후! 오리처럼 물 위에서는 우아하게, 물 밑에서는 열심히 덕질하는 우리들의 공간
               </p>
             </div>
           </section>
 
-          <main className="max-w-7xl mx-auto px-4 py-6">
+          <main className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6">
             {/* 덕심투표 섹션 */}
-            <section id="vote" className="mb-8">
-              <div className="flex items-center justify-between mb-4">
+            <section id="vote" className="mb-6 md:mb-8">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                    <TrendingUp className="w-6 h-6 mr-2 text-orange-500" />
+                  <h2 className="text-lg md:text-xl font-bold text-gray-800 flex items-center">
+                    <TrendingUp className="w-5 h-5 md:w-6 md:h-6 mr-2 text-orange-500" />
                     🔥 실시간 덕심투표
                   </h2>
                   {resetDate && (
-                    <p className="text-xs text-gray-500 mt-1 ml-8">
+                    <p className="text-[10px] md:text-xs text-gray-500 mt-1 ml-7 md:ml-8">
                       📅 {resetDate} 투표
                     </p>
                   )}
