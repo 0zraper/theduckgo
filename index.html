@@ -924,35 +924,32 @@
           <main className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-6">
             {/* 덕심투표 섹션 */}
             <section id="vote" className="mb-6 md:mb-8">
-              <div className="flex items-center justify-between mb-3 md:mb-4">
-                <div className="flex items-center space-x-2">
-                  <h2 className="text-base md:text-xl font-bold text-gray-800 flex items-center">
-                    <span className="text-2xl md:text-3xl mr-1 md:mr-2 flex-shrink-0 self-center">🔥</span>
-                    <TrendingUp className="w-8 h-8 md:w-10 md:h-10 mr-1 md:mr-2 text-orange-500 flex-shrink-0 self-center" />
-                    <div className="flex flex-col justify-center leading-tight">
-                      <span className="text-sm md:text-xl ml-2 md:ml-3">실시간</span>
-                      <span className="text-sm md:text-xl">덕심투표</span>
-                    </div>
+              <div className="flex items-start justify-between mb-3 md:mb-4 gap-3">
+                <div className="flex items-center flex-1 min-w-0">
+                  <h2 className="text-lg md:text-2xl font-bold text-gray-800 flex items-center">
+                    <span className="text-2xl md:text-3xl mr-1 md:mr-2 flex-shrink-0">🔥</span>
+                    <TrendingUp className="w-6 h-6 md:w-8 md:h-8 mr-1.5 md:mr-2 text-orange-500 flex-shrink-0" />
+                    <span className="whitespace-nowrap">실시간 덕심투표</span>
                   </h2>
+                </div>
+                <div className="flex flex-col items-end gap-2 flex-shrink-0">
                   {resetDate && (
-                    <p className="text-[10px] md:text-xs text-gray-500 whitespace-nowrap self-center">
+                    <p className="text-[10px] md:text-xs text-gray-500 whitespace-nowrap">
                       📅 {resetDate} 투표
                     </p>
                   )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">
-                    총 {voteData.reduce((sum, i) => sum + i.votes, 0).toLocaleString()}표
-                  </span>
                   {user && (
                     <button 
                       onClick={() => setShowIdolSuggestionModal(true)}
-                      className="px-2 py-1 md:px-3 md:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] md:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all whitespace-nowrap flex-shrink-0"
+                      className="px-2 py-1 md:px-3 md:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] md:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all whitespace-nowrap"
                     >
                       ➕ 아이돌 제안
                     </button>
                   )}
                 </div>
+              </div>
+              <div className="text-xs md:text-sm text-gray-500 mb-3">
+                총 {voteData.reduce((sum, i) => sum + i.votes, 0).toLocaleString()}표
               </div>
               
               {loadingIdols ? (
