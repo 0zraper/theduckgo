@@ -830,17 +830,14 @@
         <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50">
           {/* Header */}
           <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 text-white shadow-lg">
-            <div className="max-w-7xl mx-auto px-3 py-3 md:px-4 md:py-4">
+            <div className="max-w-7xl mx-auto px-3 py-2 md:px-4 md:py-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 md:space-x-3">
-                  <span className="text-2xl md:text-4xl">🐥</span>
-                  <div>
-                    <h1 className="text-lg md:text-2xl font-bold tracking-tight">THE DUCK GO</h1>
-                    <p className="text-[10px] md:text-xs opacity-90 hidden sm:block">Of the Deok, By the Deok, For the Deok</p>
-                  </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xl md:text-3xl">🐥</span>
+                  <h1 className="text-base md:text-xl font-bold">THE DUCK GO</h1>
                 </div>
-                <div className="flex items-center space-x-2 md:space-x-4">
-                  <nav className="hidden md:flex space-x-6 text-sm font-medium">
+                <div className="flex items-center space-x-1.5 md:space-x-3">
+                  <nav className="hidden md:flex space-x-4 text-xs font-medium">
                     <a href="#vote" className="hover:text-yellow-200 transition-colors">덕심투표</a>
                     <a href="#mv" className="hover:text-yellow-200 transition-colors">뮤직비디오</a>
                     <a href="#schedule" className="hover:text-yellow-200 transition-colors">스케줄</a>
@@ -906,17 +903,17 @@
           </header>
 
           {/* Hero Banner */}
-          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-4 md:py-8">
+          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-3 md:py-6">
             <div className="max-w-7xl mx-auto px-3 md:px-4 text-center">
-              <h2 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">🐥 덕의, 덕에 의한, 덕을 위한</h2>
-              <p className="text-sm md:text-lg opacity-90 mb-1 md:mb-2">K-POP 아이돌 덕후들의 놀이터</p>
-              <p className="text-xs md:text-sm opacity-75">
+              <h2 className="text-base md:text-2xl font-bold mb-1">🐥 덕의, 덕에 의한, 덕을 위한</h2>
+              <p className="text-xs md:text-base opacity-90 mb-1">K-POP 아이돌 덕후들의 놀이터</p>
+              <p className="text-[10px] md:text-sm opacity-75">
                 "덕(Duck)"은 오리, "덕(Deok)"은 덕후! 오리처럼 물 위에서는 우아하게, 물 밑에서는 열심히 덕질하는 우리들의 공간
               </p>
             </div>
           </section>
 
-          <main className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6">
+          <main className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-6">
             {/* 덕심투표 섹션 */}
             <section id="vote" className="mb-6 md:mb-8">
               <div className="flex items-center justify-between mb-3 md:mb-4">
@@ -1963,7 +1960,7 @@
                         <button onClick={handleRemoveFile} className="text-red-500 ml-2 text-sm">✕</button>
                       </div>
                     )}
-                    <div className="flex space-x-1">
+                    <div className="flex items-end space-x-1">
                       <input
                         ref={fileInputRef}
                         type="file"
@@ -1973,14 +1970,14 @@
                       />
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-2 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                        className="flex-shrink-0 p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
                         title="파일 첨부"
                       >
                         📎
                       </button>
                       <button 
                         onClick={isRecording ? stopRecording : startRecording}
-                        className={`px-2 py-2 rounded-lg text-sm ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}
+                        className={`flex-shrink-0 p-2 rounded-lg text-sm ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}
                         title={isRecording ? "녹음 중지" : "음성 녹음"}
                       >
                         🎤
@@ -1991,9 +1988,12 @@
                         onChange={(e) => setMessageText(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="메시지 입력..."
-                        className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 text-sm"
+                        className="flex-1 min-w-0 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 text-sm"
                       />
-                      <button onClick={handleSend} className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">
+                      <button 
+                        onClick={handleSend} 
+                        className="flex-shrink-0 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm whitespace-nowrap"
+                      >
                         전송
                       </button>
                     </div>
