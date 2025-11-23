@@ -1,1210 +1,2129 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE DUCK GO - 덕질, 덕애 의한, 덕을 위한</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 40px;
-            padding: 40px 20px;
-        }
-
-        .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .auth-container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 400px;
-            margin: 0 auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
-
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #999;
-            transition: all 0.3s;
-        }
-
-        .auth-tab.active {
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .main-app {
-            display: none;
-        }
-
-        .app-header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        .logout-btn {
-            padding: 10px 20px;
-            background: #f5f5f5;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #e0e0e0;
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            background: white;
-            padding: 10px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .nav-tab {
-            flex: 1;
-            padding: 15px;
-            background: none;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .nav-tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .content-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .messenger-container {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            height: 600px;
-        }
-
-        .friends-list {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .messenger-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .messenger-tab {
-            flex: 1;
-            padding: 10px;
-            background: #f5f5f5;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .messenger-tab.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .friend-item {
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .friend-item:hover {
-            background: #f9f9f9;
-        }
-
-        .friend-item.active {
-            background: #f0f0ff;
-        }
-
-        .friend-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .friend-status {
-            font-size: 12px;
-            color: #999;
-        }
-
-        .friend-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .friend-action-btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .accept-btn {
-            background: #4caf50;
-            color: white;
-        }
-
-        .reject-btn {
-            background: #f44336;
-            color: white;
-        }
-
-        .chat-window {
-            background: white;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .chat-header {
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 15px;
-            word-wrap: break-word;
-        }
-
-        .message.sent {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 5px;
-        }
-
-        .message.received {
-            background: #f0f0f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 5px;
-        }
-
-        .message-time {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-
-        .chat-input-container {
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 14px;
-        }
-
-        .send-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .add-friend-section {
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 10px;
-        }
-
-        .add-friend-form {
-            display: flex;
-            gap: 10px;
-        }
-
-        .add-friend-input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .add-friend-btn {
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .messenger-container {
-                grid-template-columns: 1fr;
-            }
-
-            .friends-list {
-                height: 300px;
-            }
-
-            .chat-window {
-                height: 500px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE DUCK GO - 덕의, 덕에 의한, 덕을 위한</title>
+  <meta name="description" content="K-POP 아이돌 덕후들의 놀이터 - 뮤직비디오, 스케줄, 투표, SNS 모음">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#EA580C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="THE DUCK GO">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐥</text></svg>">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 3px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🦆 THE DUCK GO</h1>
-            <p>덕질, 덕애 의한, 덕을 위한</p>
-        </div>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-        <!-- 인증 컨테이너 -->
-        <div id="authContainer" class="auth-container">
-            <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">로그인</button>
-                <button class="auth-tab" data-tab="signup">회원가입</button>
-            </div>
+    // Supabase 클라이언트 초기화
+    const supabase = window.supabase.createClient(
+      'https://hhschqwevdvhkarqkpsi.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2OTI3OTgsImV4cCI6MjA3OTI2ODc5OH0.E1xQxCLqyxr9TLe0iOXJqHb9p8Z-oV4fFfeMw5OrhG0'
+    );
 
-            <div id="errorMessage" class="error-message"></div>
+    // 아이콘 컴포넌트들
+    const Play = ({ className, fill }) => (
+      <svg className={className} fill={fill || "none"} stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    );
+    
+    const Calendar = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    );
+    
+    const TrendingUp = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+        <polyline points="17 6 23 6 23 12"></polyline>
+      </svg>
+    );
+    
+    const MessageSquare = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    );
+    
+    const Heart = ({ className }) => (
+      <svg className={className} fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    );
+    
+    const X = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    );
+    
+    const Instagram = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+      </svg>
+    );
+    
+    const Twitter = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+      </svg>
+    );
+    
+    const Youtube = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+      </svg>
+    );
+    
+    const Music = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"></path>
+        <circle cx="6" cy="18" r="3"></circle>
+        <circle cx="18" cy="16" r="3"></circle>
+      </svg>
+    );
+    
+    const Eye = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    );
+    
+    const Bell = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    );
+    
+    const Users = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    );
+    
+    const Send = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    );
+    
+    const UserPlus = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="8.5" cy="7" r="4"></circle>
+        <line x1="20" y1="8" x2="20" y2="14"></line>
+        <line x1="23" y1="11" x2="17" y2="11"></line>
+      </svg>
+    );
+    
+    const Check = ({ className }) => (
+      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
 
-            <!-- 로그인 폼 -->
-            <form id="loginForm" class="auth-form active">
-                <div class="form-group">
-                    <label>이메일</label>
-                    <input type="email" id="loginEmail" placeholder="이메일을 입력하세요" required>
-                </div>
-                <div class="form-group">
-                    <label>비밀번호</label>
-                    <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" required>
-                </div>
-                <button type="submit" class="submit-btn">로그인</button>
-            </form>
+    // 알림 소리 함수
+    const playNotificationSound = () => {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGWm98OihUBELTKXh8bllHAU2jdXyzn0vBSh+zPDijz4KFF607OyrWBQLTKPg8bllHAU3jtXyz34vBSh+zPDijz4KFF2z6OyrWRQLTKPf8blmHQU2jdXyzn0wBSiAzfDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4wBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4KFF607OyrWBQLTKPf8blmHQU3jtXyzn4vBSh/zPDijz4K');
+      audio.volume = 0.3;
+      audio.play().catch(e => console.log('알림 소리 재생 실패:', e));
+    };
 
-            <!-- 회원가입 폼 -->
-            <form id="signupForm" class="auth-form">
-                <div class="form-group">
-                    <label>닉네임</label>
-                    <input type="text" id="signupNickname" placeholder="사용할 닉네임" required>
-                </div>
-                <div class="form-group">
-                    <label>이메일</label>
-                    <input type="email" id="signupEmail" placeholder="example@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label>비밀번호</label>
-                    <input type="password" id="signupPassword" placeholder="6자 이상" required>
-                </div>
-                <button type="submit" class="submit-btn">가입하기</button>
-            </form>
-        </div>
+    function TheDuckGo() {
+      const [selectedVideo, setSelectedVideo] = useState(null);
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [resetDate, setResetDate] = useState('');
+      const [showAdminPage, setShowAdminPage] = useState(false);
 
-        <!-- 메인 앱 -->
-        <div id="mainApp" class="main-app">
-            <div class="app-header">
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar"></div>
-                    <div>
-                        <div id="userName" style="font-weight: 600;"></div>
-                        <div style="font-size: 14px; color: #999;">온라인</div>
-                    </div>
-                </div>
-                <button id="logoutBtn" class="logout-btn">로그아웃</button>
-            </div>
+      const [voteData, setVoteData] = useState([]);
+      const [loadingIdols, setLoadingIdols] = useState(true);
+      const [schedules, setSchedules] = useState([]);
+      const [loadingSchedules, setLoadingSchedules] = useState(true);
+      const [posts, setPosts] = useState([]);
+      const [loadingPosts, setLoadingPosts] = useState(true);
+      const [user, setUser] = useState(null);
+      const [showAuthModal, setShowAuthModal] = useState(false);
+      const [showPostModal, setShowPostModal] = useState(false);
+      const [showIdolSuggestionModal, setShowIdolSuggestionModal] = useState(false);
+      const [selectedPost, setSelectedPost] = useState(null);
+      const [authMode, setAuthMode] = useState('login');
+      
+      // 메신저 & 알림 & 친구
+      const [showMessenger, setShowMessenger] = useState(false);
+      const [showNotifications, setShowNotifications] = useState(false);
+      const [showFriends, setShowFriends] = useState(false);
+      const [messages, setMessages] = useState([]);
+      const [friendRequests, setFriendRequests] = useState([]);
+      const [friends, setFriends] = useState([]);
+      const [unreadCount, setUnreadCount] = useState(0);
+      const [notificationCount, setNotificationCount] = useState(0);
 
-            <div class="nav-tabs">
-                <button class="nav-tab active" data-tab="messenger">💬 메신저</button>
-                <button class="nav-tab" data-tab="vote">🗳️ 투표</button>
-                <button class="nav-tab" data-tab="board">📝 게시판</button>
-                <button class="nav-tab" data-tab="mv">🎵 뮤비</button>
-            </div>
-
-            <!-- 메신저 탭 -->
-            <div id="messengerTab" class="tab-content active">
-                <div class="content-card">
-                    <div class="messenger-container">
-                        <div class="friends-list">
-                            <div class="messenger-tabs">
-                                <button class="messenger-tab active" data-messenger-tab="friends">친구</button>
-                                <button class="messenger-tab" data-messenger-tab="requests">요청</button>
-                            </div>
-
-                            <!-- 친구 추가 섹션 -->
-                            <div class="add-friend-section">
-                                <h3 style="margin-bottom: 10px; font-size: 14px;">친구 추가</h3>
-                                <div class="add-friend-form">
-                                    <input type="text" id="addFriendInput" class="add-friend-input" placeholder="닉네임으로 검색">
-                                    <button id="addFriendBtn" class="add-friend-btn">추가</button>
-                                </div>
-                            </div>
-
-                            <!-- 친구 목록 -->
-                            <div id="friendsListContainer" class="messenger-tab-content active">
-                                <div id="friendsList"></div>
-                            </div>
-
-                            <!-- 친구 요청 목록 -->
-                            <div id="requestsListContainer" class="messenger-tab-content" style="display: none;">
-                                <div id="requestsList"></div>
-                            </div>
-                        </div>
-
-                        <div class="chat-window">
-                            <div class="chat-header" id="chatHeader">대화를 시작하려면 친구를 선택하세요</div>
-                            <div class="chat-messages" id="chatMessages">
-                                <div class="empty-state">
-                                    <div class="empty-state-icon">💬</div>
-                                    <div>친구를 선택하여 대화를 시작하세요</div>
-                                </div>
-                            </div>
-                            <div class="chat-input-container">
-                                <input type="text" id="chatInput" class="chat-input" placeholder="메시지를 입력하세요..." disabled>
-                                <button id="sendBtn" class="send-btn" disabled>전송</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 투표 탭 -->
-            <div id="voteTab" class="tab-content">
-                <div class="content-card">
-                    <h2>아이돌 투표</h2>
-                    <p style="color: #999; margin-top: 10px;">준비 중입니다...</p>
-                </div>
-            </div>
-
-            <!-- 게시판 탭 -->
-            <div id="boardTab" class="tab-content">
-                <div class="content-card">
-                    <h2>커뮤니티 게시판</h2>
-                    <p style="color: #999; margin-top: 10px;">준비 중입니다...</p>
-                </div>
-            </div>
-
-            <!-- 뮤비 탭 -->
-            <div id="mvTab" class="tab-content">
-                <div class="content-card">
-                    <h2>뮤직비디오</h2>
-                    <p style="color: #999; margin-top: 10px;">준비 중입니다...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Supabase 초기화 (가장 기본 방식)
-        const supabaseUrl = 'https://hhschqwevdvhkarqkpsi.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoc2NocXdldmR2aGthcnFrcHNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2OTI3OTgsImV4cCI6MjA3OTI2ODc5OH0.E1xQxCLqyxr9TLe0iOXJqHb9p8Z-oV4fFfeMw5OrhG0';
+      useEffect(() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        setResetDate(`${year}년 ${month}월`);
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-
-        // 전역 변수
-        let currentUser = null;
-        let currentChatFriend = null;
-        let messageSubscription = null;
-
-        // DOM 요소
-        const authContainer = document.getElementById('authContainer');
-        const mainApp = document.getElementById('mainApp');
-        const errorMessage = document.getElementById('errorMessage');
-
-        // 인증 탭 전환
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`${tabName}Form`).classList.add('active');
-                
-                hideError();
-            });
-        });
-
-        // 네비게이션 탭 전환
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`${tabName}Tab`).classList.add('active');
-            });
-        });
-
-        // 메신저 탭 전환
-        document.querySelectorAll('.messenger-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.messengerTab;
-                
-                document.querySelectorAll('.messenger-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                if (tabName === 'friends') {
-                    document.getElementById('friendsListContainer').style.display = 'block';
-                    document.getElementById('requestsListContainer').style.display = 'none';
-                    loadFriends();
-                } else {
-                    document.getElementById('friendsListContainer').style.display = 'none';
-                    document.getElementById('requestsListContainer').style.display = 'block';
-                    loadFriendRequests();
-                }
-            });
-        });
-
-        // 에러 표시
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
+        fetchIdols();
+        fetchSchedules();
+        fetchPosts();
+        checkUser();
+      }, []);
+      
+      useEffect(() => {
+        if (user) {
+          const interval = setInterval(() => {
+            fetchFriendRequests(user.id);
+            fetchUnreadMessages(user.id);
+          }, 3000); // 3초마다 체크
+          
+          return () => clearInterval(interval);
         }
-
-        function hideError() {
-            errorMessage.style.display = 'none';
+      }, [user]);
+      
+      const checkUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, nickname, email')
+            .eq('id', user.id)
+            .single();
+          
+          if (userData) {
+            setUser({ ...user, ...userData });
+            fetchFriendRequests(user.id);
+            fetchUnreadMessages(user.id);
+          } else {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
         }
-
-        // 회원가입
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideError();
-
-            const nickname = document.getElementById('signupNickname').value.trim();
-            const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-
-            if (!nickname || !email || !password) {
-                showError('모든 항목을 입력하세요.');
-                return;
-            }
-
-            if (password.length < 6) {
-                showError('비밀번호는 6자 이상이어야 합니다.');
-                return;
-            }
-
-            try {
-                // 닉네임 중복 확인
-                const { data: existingUser } = await supabase
-                    .from('users')
-                    .select('nickname')
-                    .eq('nickname', nickname)
-                    .maybeSingle();
-
-                if (existingUser) {
-                    showError('이미 사용 중인 닉네임입니다.');
-                    return;
-                }
-
-                // Supabase Auth로 회원가입
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                });
-
-                if (signUpError) {
-                    console.error('Sign up error:', signUpError);
-                    showError('회원가입 실패: ' + signUpError.message);
-                    return;
-                }
-
-                if (!authData.user) {
-                    showError('회원가입에 실패했습니다.');
-                    return;
-                }
-
-                // users 테이블에 사용자 정보 저장 (auth.users의 UUID 사용)
-                const { error: insertError } = await supabase
-                    .from('users')
-                    .insert([{
-                        id: authData.user.id,
-                        email: email,
-                        nickname: nickname
-                    }]);
-
-                if (insertError) {
-                    console.error('User insert error:', insertError);
-                    showError('사용자 정보 저장 실패: ' + insertError.message);
-                    return;
-                }
-
-                alert('가입이 완료되었습니다! 로그인해주세요.');
-                
-                // 로그인 탭으로 전환
-                document.querySelector('[data-tab="login"]').click();
-                document.getElementById('loginEmail').value = email;
-                
-            } catch (error) {
-                console.error('Signup error:', error);
-                showError('회원가입 중 오류가 발생했습니다: ' + error.message);
-            }
-        });
-
-        // 로그인
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideError();
-
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (signInError) throw signInError;
-
-                console.log('Auth success, user ID:', authData.user.id);
-
-                // 사용자 정보 가져오기
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('id, nickname, email')
-                    .eq('id', authData.user.id)
-                    .single();
-
-                console.log('User data:', userData);
-                console.log('User error:', userError);
-
-                if (userError) {
-                    console.error('User fetch error:', userError);
-                    showError('사용자 정보를 가져올 수 없습니다: ' + userError.message);
-                    return;
-                }
-
-                if (!userData) {
-                    showError('사용자 정보가 없습니다.');
-                    return;
-                }
-
-                currentUser = userData;
-                console.log('Current user set:', currentUser);
-                showMainApp();
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                showError('이메일 또는 비밀번호가 일치하지 않습니다.');
-            }
-        });
-
-        // 로그아웃
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await supabase.auth.signOut();
-                currentUser = null;
-                currentChatFriend = null;
-                
-                if (messageSubscription) {
-                    messageSubscription.unsubscribe();
-                }
-                
-                authContainer.style.display = 'block';
-                mainApp.style.display = 'none';
-                
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        });
-
-        // 메인 앱 표시
-        function showMainApp() {
-            authContainer.style.display = 'none';
-            mainApp.style.display = 'block';
-            
-            document.getElementById('userName').textContent = currentUser.nickname;
-            document.getElementById('userAvatar').textContent = currentUser.nickname.charAt(0).toUpperCase();
-            
-            loadFriends();
-            subscribeToMessages();
+      };
+      
+      const fetchMessages = async (userEmail) => {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .or(`from_user.eq.${userEmail},to_user.eq.${userEmail}`)
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          setMessages(data || []);
+          
+          // 읽지 않은 메시지 개수
+          const unread = data?.filter(m => m.to_user === userEmail && !m.is_read).length || 0;
+          setUnreadCount(unread);
+        } catch (error) {
+          console.error('메시지 로드 실패:', error);
         }
+      };
+      
+      const fetchFriendRequests = async (userId) => {
+        try {
+          const { data, error } = await supabase
+            .from('friendships')
+            .select(`
+              id,
+              user_id,
+              users!friendships_user_id_fkey(id, nickname)
+            `)
+            .eq('friend_id', userId)
+            .eq('status', 'pending');
+          
+          if (error) throw error;
+          
+          const newCount = data?.length || 0;
+          if (newCount > notificationCount && notificationCount !== 0) {
+            playNotificationSound();
+          }
+          
+          setNotificationCount(newCount);
+          setFriendRequests(data || []);
+        } catch (error) {
+          console.error('친구 요청 로드 실패:', error);
+        }
+      };
+      
+      const fetchUnreadMessages = async (userId) => {
+        try {
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('receiver_id', userId)
+            .eq('is_read', false);
+          
+          const newCount = count || 0;
+          if (newCount > unreadCount && unreadCount !== 0) {
+            playNotificationSound();
+          }
+          
+          setUnreadCount(newCount);
+        } catch (error) {
+          console.error('읽지 않은 메시지 로드 실패:', error);
+        }
+      };
+      
+      const fetchFriends = async (userEmail) => {
+        try {
+          const { data, error } = await supabase
+            .from('friends')
+            .select('*')
+            .or(`user_email.eq.${userEmail},friend_email.eq.${userEmail}`);
+          
+          if (error) throw error;
+          setFriends(data || []);
+        } catch (error) {
+          console.error('친구 목록 로드 실패:', error);
+        }
+      };
+      
+      const fetchIdols = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('idols')
+            .select('id, name, song, "videoId", votes, color, created_at')
+            .order('votes', { ascending: false});
+          
+          if (error) throw error;
+          
+          // videoId가 없으면 videoid로 매핑
+          const mappedData = (data || []).map(idol => ({
+            ...idol,
+            videoId: idol.videoId || idol.videoid
+          }));
+          
+          setVoteData(mappedData);
+        } catch (error) {
+          console.error('아이돌 로드 실패:', error);
+        } finally {
+          setLoadingIdols(false);
+        }
+      };
+      
+      const fetchSchedules = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('schedules')
+            .select('*')
+            .order('date', { ascending: true });
+          
+          if (error) throw error;
+          
+          setSchedules(data || []);
+        } catch (error) {
+          console.error('스케줄 로드 실패:', error);
+        } finally {
+          setLoadingSchedules(false);
+        }
+      };
+      
+      const fetchPosts = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          setPosts(data || []);
+        } catch (error) {
+          console.error('게시글 로드 실패:', error);
+        } finally {
+          setLoadingPosts(false);
+        }
+      };
 
-        // 친구 목록 로드
-        async function loadFriends() {
-            try {
-                const { data, error } = await supabase
-                    .from('friendships')
-                    .select(`
-                        friend_id,
-                        users!friendships_friend_id_fkey(id, nickname)
-                    `)
-                    .eq('user_id', currentUser.id)
-                    .eq('status', 'accepted');
+      // 뮤직비디오 데이터
+      const musicVideos = [
+        { id: 1, artist: 'NewJeans', title: 'How Sweet', videoId: 'Q3K0TOvTOno', views: '180M', date: '2024.05' },
+        { id: 2, artist: 'aespa', title: 'Whiplash', videoId: 'jWQx2f-CErU', views: '95M', date: '2024.10' },
+        { id: 3, artist: 'IVE', title: 'Baddie', videoId: 'Da4P2uT4mVc', views: '120M', date: '2023.10' },
+        { id: 4, artist: 'LE SSERAFIM', title: 'CRAZY', videoId: 'n6B5gQXlB-0', views: '85M', date: '2024.08' },
+        { id: 5, artist: 'SEVENTEEN', title: 'MAESTRO', videoId: 'ThI0pBAbFnk', views: '75M', date: '2024.05' },
+        { id: 6, artist: 'Stray Kids', title: 'Chk Chk Boom', videoId: '0P0aQreFs8w', views: '90M', date: '2024.07' },
+        { id: 7, artist: 'NMIXX', title: 'DASH', videoId: '7UecFm_bSTU', views: '45M', date: '2024.01' },
+        { id: 8, artist: 'ITZY', title: 'GOLD', videoId: 'eMk_0svqsnI', views: '55M', date: '2024.10' },
+      ];
 
-                if (error) throw error;
+      // SNS 계정 데이터
+      const snsAccounts = [
+        {
+          name: 'NewJeans',
+          official: {
+            instagram: 'newjeans_official',
+            twitter: 'NewJeans_ADOR',
+            youtube: '@NewJeans_official',
+            tiktok: '@newjeans_official'
+          },
+          members: [
+            { name: '민지', instagram: 'minji_newjeans' },
+            { name: '하니', instagram: 'hanni_newjeans' },
+            { name: '다니엘', instagram: 'daniellekimm' },
+            { name: '해린', instagram: 'haerin_newjeans' },
+            { name: '혜인', instagram: 'hyein_newjeans' }
+          ]
+        },
+        {
+          name: 'aespa',
+          official: {
+            instagram: 'aespa_official',
+            twitter: 'aesloookipa',
+            youtube: '@aespa',
+            tiktok: '@aespa_official'
+          },
+          members: [
+            { name: '카리나', instagram: 'katarinabluu' },
+            { name: '지젤', instagram: 'gisellekim_' },
+            { name: '윈터', instagram: 'winter.wxnter' },
+            { name: '닝닝', instagram: 'ningning_0323' }
+          ]
+        },
+        {
+          name: 'IVE',
+          official: {
+            instagram: 'ivestarship',
+            twitter: 'IVEstarship',
+            youtube: '@IVE',
+            tiktok: '@ivestarship_official'
+          },
+          members: [
+            { name: '안유진', instagram: '_yujin_an' },
+            { name: '가을', instagram: 'fallingin__fall' },
+            { name: '레이', instagram: 'reinyourheart' },
+            { name: '장원영', instagram: 'for_everyoung10' },
+            { name: '리즈', instagram: 'liz.yeyo' },
+            { name: '이서', instagram: 'le.seo_0' }
+          ]
+        },
+        {
+          name: 'LE SSERAFIM',
+          official: {
+            instagram: 'le_sserafim',
+            twitter: 'le_sserafim',
+            youtube: '@LESSERAFIM',
+            tiktok: '@le_sserafim'
+          },
+          members: [
+            { name: '사쿠라', instagram: '39saku_chan' },
+            { name: '김채원', instagram: '_chaechae_1' },
+            { name: '허윤진', instagram: 'jenaissansen' },
+            { name: '카즈하', instagram: 'kazuha__official' },
+            { name: '홍은채', instagram: 'eunchae_lesserafim' }
+          ]
+        },
+        {
+          name: 'SEVENTEEN',
+          official: {
+            instagram: 'saythename_17',
+            twitter: 'pledis_17',
+            youtube: '@SEVENTEEN',
+            tiktok: '@seventeen17_official'
+          },
+          members: []
+        },
+        {
+          name: 'Stray Kids',
+          official: {
+            instagram: 'realstraykids',
+            twitter: 'Stray_Kids',
+            youtube: '@StrayKids',
+            tiktok: '@jaborabangnda'
+          },
+          members: []
+        }
+      ];
 
-                const friendsList = document.getElementById('friendsList');
-                
-                if (!data || data.length === 0) {
-                    friendsList.innerHTML = `
-                        <div class="empty-state">
-                            <div style="font-size: 32px; margin-bottom: 10px;">👥</div>
-                            <div style="color: #999;">친구가 없습니다</div>
-                            <div style="color: #999; font-size: 12px; margin-top: 5px;">닉네임으로 친구를 추가해보세요</div>
+      // 게시판 카테고리
+      const categories = [
+        { id: 'all', name: '전체' },
+        { id: 'notice', name: '공지' },
+        { id: 'news', name: '소식' },
+        { id: 'request', name: '요청' },
+        { id: 'free', name: '자유' },
+        { id: 'qna', name: '질문답변' }
+      ];
+
+      const handleVote = async (id) => {
+        try {
+          // 현재 투표수 가져오기
+          const idol = voteData.find(i => i.id === id);
+          if (!idol) return;
+          
+          // Supabase에서 투표수 업데이트
+          const { error } = await supabase
+            .from('idols')
+            .update({ votes: idol.votes + 1 })
+            .eq('id', id);
+          
+          if (error) throw error;
+          
+          // 로컬 상태 업데이트
+          setVoteData(prev => 
+            prev.map(idol => 
+              idol.id === id ? { ...idol, votes: idol.votes + 1 } : idol
+            ).sort((a, b) => b.votes - a.votes)
+          );
+        } catch (error) {
+          console.error('투표 실패:', error);
+          alert('투표에 실패했습니다');
+        }
+      };
+      
+      const handleSignUp = async (email, password, nickname) => {
+        try {
+          // 닉네임 중복 확인
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('nickname')
+            .eq('nickname', nickname)
+            .maybeSingle();
+          
+          if (existingUser) {
+            alert('이미 사용 중인 닉네임입니다.');
+            return;
+          }
+          
+          // Supabase Auth 회원가입 (metadata에 nickname 포함)
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { nickname }
+            }
+          });
+          
+          if (error) throw error;
+          
+          alert('회원가입 완료! 로그인해주세요.');
+          setShowAuthModal(false);
+          setAuthMode('login');
+        } catch (error) {
+          alert('회원가입 실패: ' + error.message);
+        }
+      };
+      
+      const handleLogin = async (email, password) => {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+          
+          if (error) throw error;
+          
+          setShowAuthModal(false);
+          checkUser();
+        } catch (error) {
+          alert('로그인 실패: ' + error.message);
+        }
+      };
+      
+      const handleLogout = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+      };
+      
+      const handleCreatePost = async (category, title, content) => {
+        if (!user) {
+          alert('로그인이 필요합니다');
+          return;
+        }
+        
+        try {
+          const { error } = await supabase
+            .from('posts')
+            .insert([{
+              category,
+              title,
+              author: user.nickname || user.email.split('@')[0],
+              content,
+              comments: 0,
+              hot: false
+            }]);
+          
+          if (error) throw error;
+          
+          setShowPostModal(false);
+          fetchPosts();
+        } catch (error) {
+          alert('게시글 작성 실패: ' + error.message);
+        }
+      };
+      
+      const handleSuggestIdol = async (name, song, videoId, color) => {
+        if (!user) {
+          alert('로그인이 필요합니다');
+          return;
+        }
+        
+        try {
+          const { error } = await supabase
+            .from('idol_suggestions')
+            .insert([{
+              name,
+              song,
+              "videoId": videoId,
+              color,
+              suggested_by: user.email,
+              status: 'pending'
+            }]);
+          
+          if (error) throw error;
+          
+          setShowIdolSuggestionModal(false);
+          alert('아이돌 제안이 완료되었습니다!');
+        } catch (error) {
+          alert('제안 실패: ' + error.message);
+        }
+      };
+      
+      const handleApproveIdol = async (suggestion) => {
+        try {
+          // idol_suggestions에서 idol로 이동
+          const { error: insertError } = await supabase
+            .from('idols')
+            .insert([{
+              name: suggestion.name,
+              song: suggestion.song,
+              "videoId": suggestion.videoId,
+              color: suggestion.color,
+              votes: 0
+            }]);
+          
+          if (insertError) throw insertError;
+          
+          // 제안 상태 업데이트
+          const { error: updateError } = await supabase
+            .from('idol_suggestions')
+            .update({ status: 'approved' })
+            .eq('id', suggestion.id);
+          
+          if (updateError) throw updateError;
+          
+          alert('승인되었습니다!');
+          fetchIdols();
+        } catch (error) {
+          alert('승인 실패: ' + error.message);
+        }
+      };
+      
+      const handleRejectIdol = async (id) => {
+        try {
+          const { error } = await supabase
+            .from('idol_suggestions')
+            .update({ status: 'rejected' })
+            .eq('id', id);
+          
+          if (error) throw error;
+          
+          alert('거부되었습니다');
+        } catch (error) {
+          alert('거부 실패: ' + error.message);
+        }
+      };
+      
+      // 메시지 전송
+      const handleSendMessage = async (receiverId, content) => {
+        if (!user || !content.trim()) return;
+        
+        try {
+          const { error } = await supabase
+            .from('messages')
+            .insert({
+              sender_id: user.id,
+              receiver_id: receiverId,
+              content: content.trim(),
+              is_read: false
+            });
+          
+          if (error) throw error;
+          await fetchUnreadMessages(user.id);
+        } catch (error) {
+          console.error('메시지 전송 실패:', error);
+          alert('메시지 전송 실패: ' + error.message);
+        }
+      };
+      
+      // 메시지 읽음 처리
+      const handleMarkMessageAsRead = async (messageId) => {
+        try {
+          const { error } = await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .eq('id', messageId);
+          
+          if (error) throw error;
+          await fetchUnreadMessages(user.id);
+        } catch (error) {
+          console.error('읽음 처리 실패:', error);
+        }
+      };
+      
+      // 친구 요청
+      const handleAddFriend = async (friendNickname) => {
+        if (!user || !friendNickname.trim()) return;
+        
+        if (friendNickname === user.nickname) {
+          alert('자기 자신을 친구로 추가할 수 없습니다');
+          return;
+        }
+        
+        try {
+          // 닉네임으로 사용자 찾기
+          const { data: targetUser, error: findError } = await supabase
+            .from('users')
+            .select('id, nickname')
+            .eq('nickname', friendNickname.trim())
+            .single();
+          
+          if (findError || !targetUser) {
+            alert('존재하지 않는 사용자입니다');
+            return;
+          }
+          
+          // 이미 친구인지 확인
+          const { data: existing } = await supabase
+            .from('friendships')
+            .select('status')
+            .or(`and(user_id.eq.${user.id},friend_id.eq.${targetUser.id}),and(user_id.eq.${targetUser.id},friend_id.eq.${user.id})`)
+            .maybeSingle();
+          
+          if (existing) {
+            if (existing.status === 'accepted') {
+              alert('이미 친구입니다');
+            } else {
+              alert('이미 요청을 보냈거나 받았습니다');
+            }
+            return;
+          }
+          
+          // 친구 요청 보내기
+          const { error } = await supabase
+            .from('friendships')
+            .insert({
+              user_id: user.id,
+              friend_id: targetUser.id,
+              status: 'pending'
+            });
+          
+          if (error) throw error;
+          
+          alert(`${friendNickname}님에게 친구 요청을 보냈습니다`);
+          await fetchFriends(user.id);
+        } catch (error) {
+          console.error('친구 추가 실패:', error);
+          alert('친구 추가 실패: ' + error.message);
+        }
+      };
+      
+      // 친구 요청 수락
+      const handleAcceptFriend = async (requestId, requesterId) => {
+        try {
+          // 요청 상태 업데이트
+          const { error: updateError } = await supabase
+            .from('friendships')
+            .update({ status: 'accepted' })
+            .eq('id', requestId);
+          
+          if (updateError) throw updateError;
+          
+          // 역방향 친구 관계 추가
+          const { error: insertError } = await supabase
+            .from('friendships')
+            .insert({
+              user_id: user.id,
+              friend_id: requesterId,
+              status: 'accepted'
+            });
+          
+          if (insertError) throw insertError;
+          
+          alert('친구 요청을 수락했습니다');
+          await fetchFriends(user.id);
+          await fetchFriendRequests(user.id);
+        } catch (error) {
+          console.error('친구 수락 실패:', error);
+          alert('친구 수락 실패: ' + error.message);
+        }
+      };
+      
+      // 친구 요청 거절
+      const handleRejectFriend = async (requestId) => {
+        try {
+          const { error } = await supabase
+            .from('friendships')
+            .delete()
+            .eq('id', requestId);
+          
+          if (error) throw error;
+          
+          alert('친구 요청을 거절했습니다');
+          await fetchFriendRequests(user.id);
+        } catch (error) {
+          console.error('친구 거절 실패:', error);
+          alert('친구 거절 실패: ' + error.message);
+        }
+      };
+      
+      const getTypeColor = (type) => {
+        switch(type) {
+          case 'broadcast': return 'bg-blue-100 text-blue-700';
+          case 'concert': return 'bg-purple-100 text-purple-700';
+          case 'fanmeeting': return 'bg-pink-100 text-pink-700';
+          case 'fansign': return 'bg-green-100 text-green-700';
+          default: return 'bg-gray-100 text-gray-700';
+        }
+      };
+
+      const getCategoryColor = (category) => {
+        switch(category) {
+          case 'notice': return 'bg-red-100 text-red-700';
+          case 'news': return 'bg-blue-100 text-blue-700';
+          case 'request': return 'bg-yellow-100 text-yellow-700';
+          case 'free': return 'bg-green-100 text-green-700';
+          case 'qna': return 'bg-purple-100 text-purple-700';
+          default: return 'bg-gray-100 text-gray-700';
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50">
+          {/* Header */}
+          <header className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 text-white shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-4xl">🐥</span>
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight">THE DUCK GO</h1>
+                    <p className="text-xs opacity-90">Of the Deok, By the Deok, For the Deok</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <nav className="hidden md:flex space-x-6 text-sm font-medium">
+                    <a href="#vote" className="hover:text-yellow-200 transition-colors">덕심투표</a>
+                    <a href="#mv" className="hover:text-yellow-200 transition-colors">뮤직비디오</a>
+                    <a href="#schedule" className="hover:text-yellow-200 transition-colors">스케줄</a>
+                    <a href="#sns" className="hover:text-yellow-200 transition-colors">SNS</a>
+                    <a href="#board" className="hover:text-yellow-200 transition-colors">게시판</a>
+                  </nav>
+                  {user ? (
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm hidden md:inline">{user.nickname || user.email.split('@')[0]}</span>
+                      
+                      {/* 친구 아이콘 */}
+                      <button 
+                        onClick={() => setShowFriends(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="친구"
+                      >
+                        <Users className="w-5 h-5" />
+                      </button>
+                      
+                      {/* 알림 아이콘 */}
+                      <button 
+                        onClick={() => setShowNotifications(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="알림"
+                      >
+                        <Bell className="w-5 h-5" />
+                        {notificationCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {notificationCount}
+                          </span>
+                        )}
+                      </button>
+                      
+                      {/* 메시지 아이콘 */}
+                      <button 
+                        onClick={() => setShowMessenger(true)}
+                        className="relative p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        title="메시지"
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      
+                      <button onClick={() => setShowAdminPage(true)} className="text-sm px-3 py-1 bg-purple-600 rounded hover:bg-purple-700 transition-colors">
+                        관리자
+                      </button>
+                      <button onClick={handleLogout} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
+                        로그아웃
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
+                      로그인
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Hero Banner */}
+          <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white py-8">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <h2 className="text-3xl font-bold mb-2">🐥 덕의, 덕에 의한, 덕을 위한</h2>
+              <p className="text-lg opacity-90 mb-2">K-POP 아이돌 덕후들의 놀이터</p>
+              <p className="text-sm opacity-75">
+                "덕(Duck)"은 오리, "덕(Deok)"은 덕후! 오리처럼 물 위에서는 우아하게, 물 밑에서는 열심히 덕질하는 우리들의 공간
+              </p>
+            </div>
+          </section>
+
+          <main className="max-w-7xl mx-auto px-4 py-6">
+            {/* 덕심투표 섹션 */}
+            <section id="vote" className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                    <TrendingUp className="w-6 h-6 mr-2 text-orange-500" />
+                    🔥 실시간 덕심투표
+                  </h2>
+                  {resetDate && (
+                    <p className="text-xs text-gray-500 mt-1 ml-8">
+                      📅 {resetDate} 투표
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-500">
+                    총 {voteData.reduce((sum, i) => sum + i.votes, 0).toLocaleString()}표
+                  </span>
+                  {user && (
+                    <button 
+                      onClick={() => setShowIdolSuggestionModal(true)}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all"
+                    >
+                      ➕ 아이돌 제안
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              {loadingIdols ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="animate-pulse">아이돌 로딩 중...</div>
+                </div>
+              ) : voteData.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  아직 등록된 아이돌이 없습니다
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  {voteData.map((idol, index) => {
+                  const maxVotes = Math.max(...voteData.map(i => i.votes), 1);
+                  return (
+                  <div
+                    key={idol.id}
+                    onClick={() => handleVote(idol.id)}
+                    className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300 group"
+                    style={{ aspectRatio: '3/4' }}
+                  >
+                    {/* 유튜브 썸네일 배경 */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ 
+                        backgroundImage: `url(https://img.youtube.com/vi/${idol.videoId}/maxresdefault.jpg)` 
+                      }}
+                    />
+                    
+                    {/* 그라데이션 오버레이 */}
+                    <div className={`absolute inset-0 bg-gradient-to-t ${idol.color} opacity-60 group-hover:opacity-40 transition-opacity`} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                    
+                    {/* 순위 뱃지 */}
+                    <div className="absolute top-2 left-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center font-bold text-gray-800 shadow">
+                      {index + 1}
+                    </div>
+                    
+                    {/* 컨텐츠 */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      <h3 className="font-bold text-sm truncate">{idol.name}</h3>
+                      <p className="text-xs opacity-80 truncate">{idol.song}</p>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="flex items-center">
+                            <Heart className="w-3 h-3 mr-1 fill-current" />
+                            {idol.votes.toLocaleString()}
+                          </span>
                         </div>
-                    `;
-                    return;
-                }
+                        <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-white rounded-full transition-all duration-500"
+                            style={{ width: `${(idol.votes / maxVotes) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* 호버 효과 */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                        <Heart className="w-6 h-6 text-pink-500" />
+                      </div>
+                    </div>
+                  </div>
+                  );
+                  })}
+                </div>
+              )}
+            </section>
 
-                friendsList.innerHTML = data.map(friendship => {
-                    const friend = friendship.users;
-                    return `
-                        <div class="friend-item" data-friend-id="${friend.id}" data-friend-nickname="${friend.nickname}">
-                            <div>
-                                <div class="friend-name">${friend.nickname}</div>
-                                <div class="friend-status">온라인</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* 왼쪽 컬럼 - 뮤직비디오 */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* 뮤직비디오 섹션 */}
+                <section id="mv" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Play className="w-6 h-6 mr-2 text-red-500" />
+                    공식 뮤직비디오
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">🎬 클릭하면 영상이 재생됩니다</p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {musicVideos.map((video) => (
+                      <div 
+                        key={video.id}
+                        onClick={() => setSelectedVideo(video)}
+                        className="group cursor-pointer"
+                      >
+                        <div className="relative aspect-video rounded-lg overflow-hidden mb-2 shadow-sm group-hover:shadow-md transition-shadow">
+                          <img 
+                            src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                            alt={`${video.artist} - ${video.title}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <Play className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="white" />
+                          </div>
+                          <div className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1 rounded">
+                            {video.views}
+                          </div>
+                        </div>
+                        <h3 className="text-xs font-medium text-gray-800 truncate">{video.artist}</h3>
+                        <p className="text-xs text-gray-500 truncate">{video.title}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* 게시판 섹션 */}
+                <section id="board" className="bg-white rounded-xl shadow-md p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                      <MessageSquare className="w-6 h-6 mr-2 text-green-600" />
+                      커뮤니티
+                    </h2>
+                    {user ? (
+                      <button 
+                        onClick={() => setShowPostModal(true)}
+                        className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        ✍️ 글쓰기
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => { setAuthMode('login'); setShowAuthModal(true); }}
+                        className="px-4 py-2 bg-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-400 transition-colors"
+                      >
+                        🔒 로그인 필요
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* 카테고리 탭 */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          activeCategory === cat.id 
+                            ? 'bg-orange-500 text-white' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {/* 게시글 목록 */}
+                  {loadingPosts ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="animate-pulse">게시글 로딩 중...</div>
+                    </div>
+                  ) : posts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      첫 게시글을 작성해보세요!
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {posts
+                        .filter(post => activeCategory === 'all' || post.category === activeCategory)
+                        .map((post) => (
+                          <div 
+                            key={post.id}
+                            onClick={() => setSelectedPost(post)}
+                            className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                              <span className={`text-xs px-2 py-0.5 rounded ${getCategoryColor(post.category)}`}>
+                                {categories.find(c => c.id === post.category)?.name}
+                              </span>
+                              <span className="text-sm text-gray-800 truncate flex items-center">
+                                {post.hot && <span className="text-red-500 mr-1">🔥</span>}
+                                {post.title}
+                              </span>
                             </div>
-                        </div>
-                    `;
-                }).join('');
+                            <div className="flex items-center space-x-3 text-xs text-gray-500 ml-2">
+                              <span>{post.author}</span>
+                              <span className="flex items-center">
+                                <MessageSquare className="w-3 h-3 mr-1" />
+                                {post.comments}
+                              </span>
+                              <span>{new Date(post.created_at).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}</span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </section>
+              </div>
 
-                // 친구 클릭 이벤트
-                document.querySelectorAll('.friend-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const friendId = item.dataset.friendId;
-                        const friendNickname = item.dataset.friendNickname;
+              {/* 오른쪽 컬럼 */}
+              <div className="space-y-6">
+                {/* 스케줄 섹션 */}
+                <section id="schedule" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Calendar className="w-6 h-6 mr-2 text-blue-600" />
+                    이번주 스케줄
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">📅 놓치면 안될 일정! (실시간 업데이트)</p>
+                  
+                  {loadingSchedules ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="animate-pulse">스케줄 로딩 중...</div>
+                    </div>
+                  ) : schedules.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      등록된 스케줄이 없습니다
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {schedules.map((schedule, index) => (
+                        <div key={schedule.id || index} className="border-l-4 border-purple-500 pl-3 py-2 hover:bg-gray-50 rounded-r-lg transition-colors">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-bold text-purple-600">{schedule.date}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(schedule.type)}`}>
+                              {schedule.type === 'broadcast' ? '방송' : 
+                               schedule.type === 'concert' ? '콘서트' : 
+                               schedule.type === 'fanmeeting' ? '팬미팅' : '사인회'}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-gray-800">{schedule.event}</p>
+                          {schedule.artist && (
+                            <p className="text-xs text-purple-600 font-medium">{schedule.artist}</p>
+                          )}
+                          <p className="text-xs text-gray-500">{schedule.time} · {schedule.location}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {/* SNS 계정 모음 섹션 */}
+                <section id="sns" className="bg-white rounded-xl shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <Instagram className="w-6 h-6 mr-2 text-pink-500" />
+                    SNS 계정 모음
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">📱 공식 & 멤버 계정</p>
+                  
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {snsAccounts.map((group, index) => (
+                      <div key={index} className="border-b border-gray-100 pb-3 last:border-0">
+                        <h3 className="font-bold text-sm text-gray-800 mb-2">{group.name}</h3>
                         
-                        document.querySelectorAll('.friend-item').forEach(i => i.classList.remove('active'));
-                        item.classList.add('active');
+                        {/* 공식 계정 */}
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          <a href={`https://instagram.com/${group.official.instagram}`} target="_blank" rel="noopener noreferrer" 
+                             className="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Instagram className="w-3 h-3 mr-1" />
+                            공식
+                          </a>
+                          <a href={`https://twitter.com/${group.official.twitter}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-black text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Twitter className="w-3 h-3 mr-1" />
+                            X
+                          </a>
+                          <a href={`https://youtube.com/${group.official.youtube}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-red-600 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Youtube className="w-3 h-3 mr-1" />
+                            YT
+                          </a>
+                          <a href={`https://tiktok.com/${group.official.tiktok}`} target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center px-2 py-0.5 bg-gray-900 text-white text-xs rounded hover:opacity-80 transition-opacity">
+                            <Music className="w-3 h-3 mr-1" />
+                            TT
+                          </a>
+                        </div>
                         
-                        openChat(friendId, friendNickname);
-                    });
-                });
-                
-            } catch (error) {
-                console.error('Load friends error:', error);
-            }
+                        {/* 멤버 계정 */}
+                        {group.members.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {group.members.map((member, mIndex) => (
+                              <a 
+                                key={mIndex}
+                                href={`https://instagram.com/${member.instagram}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded hover:bg-pink-100 hover:text-pink-600 transition-colors"
+                              >
+                                {member.name}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-gray-800 text-white py-6 mt-8">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <span className="text-2xl">🐥</span>
+                <span className="font-bold">THE DUCK GO</span>
+              </div>
+              <p className="text-sm text-gray-400">Of the Deok, By the Deok, For the Deok</p>
+              <p className="text-xs text-gray-500 mt-2">© 2024 TheDuckGo. All rights reserved.</p>
+            </div>
+          </footer>
+
+          {/* 비디오 모달 */}
+          {selectedVideo && (
+            <div 
+              className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+              onClick={() => setSelectedVideo(null)}
+            >
+              <div 
+                className="bg-black rounded-xl overflow-hidden max-w-4xl w-full"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-3 bg-gray-900">
+                  <div>
+                    <h3 className="font-bold text-white">{selectedVideo.artist}</h3>
+                    <p className="text-sm text-gray-400">{selectedVideo.title}</p>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedVideo(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="aspect-video">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0&modestbranding=1`}
+                    title={`${selectedVideo.artist} - ${selectedVideo.title}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* 로그인/회원가입 모달 */}
+          {showAuthModal && (
+            <AuthModal 
+              mode={authMode}
+              onClose={() => setShowAuthModal(false)}
+              onLogin={handleLogin}
+              onSignUp={handleSignUp}
+              setMode={setAuthMode}
+            />
+          )}
+          
+          {/* 글쓰기 모달 */}
+          {showPostModal && (
+            <PostModal 
+              onClose={() => setShowPostModal(false)}
+              onCreate={handleCreatePost}
+              categories={categories.filter(c => c.id !== 'all')}
+            />
+          )}
+          
+          {/* 아이돌 제안 모달 */}
+          {showIdolSuggestionModal && (
+            <IdolSuggestionModal 
+              onClose={() => setShowIdolSuggestionModal(false)}
+              onSuggest={handleSuggestIdol}
+            />
+          )}
+          
+          {/* 게시글 상세보기 모달 */}
+          {selectedPost && (
+            <PostDetailModal 
+              post={selectedPost}
+              onClose={() => setSelectedPost(null)}
+            />
+          )}
+          
+          {/* 메신저 모달 */}
+          {showMessenger && user && (
+            <MessengerModal 
+              user={user}
+              onClose={() => setShowMessenger(false)}
+              onSendMessage={handleSendMessage}
+              onMarkAsRead={handleMarkMessageAsRead}
+            />
+          )}
+          
+          {/* 친구 요청 알림 모달 */}
+          {showNotifications && user && (
+            <FriendRequestsModal 
+              onClose={() => setShowNotifications(false)}
+              friendRequests={friendRequests}
+              onAccept={(requestId, requesterId) => {
+                handleAcceptFriend(requestId, requesterId);
+              }}
+              onReject={(requestId) => {
+                handleRejectFriend(requestId);
+              }}
+            />
+          )}
+          
+          {/* 친구 모달 */}
+          {showFriends && user && (
+            <FriendsModal 
+              user={user}
+              onClose={() => setShowFriends(false)}
+              friends={friends}
+              onAddFriend={handleAddFriend}
+              onAccept={handleAcceptFriend}
+              onReject={handleRejectFriend}
+            />
+          )}
+          
+          {/* 관리자 페이지 */}
+          {showAdminPage && (
+            <AdminPage 
+              onClose={() => setShowAdminPage(false)}
+              onApprove={handleApproveIdol}
+              onReject={handleRejectIdol}
+            />
+          )}
+        </div>
+      );
+    }
+    
+    // 로그인/회원가입 모달 컴포넌트
+    function AuthModal({ mode, onClose, onLogin, onSignUp, setMode }) {
+      const [email, setEmail] = React.useState('');
+      const [password, setPassword] = React.useState('');
+      const [nickname, setNickname] = React.useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (mode === 'login') {
+          onLogin(email, password);
+        } else {
+          onSignUp(email, password, nickname);
         }
-
-        // 친구 요청 목록 로드
-        async function loadFriendRequests() {
-            try {
-                const { data, error } = await supabase
-                    .from('friendships')
-                    .select(`
-                        id,
-                        user_id,
-                        users!friendships_user_id_fkey(id, nickname)
-                    `)
-                    .eq('friend_id', currentUser.id)
-                    .eq('status', 'pending');
-
-                if (error) throw error;
-
-                const requestsList = document.getElementById('requestsList');
-                
-                if (!data || data.length === 0) {
-                    requestsList.innerHTML = `
-                        <div class="empty-state">
-                            <div style="font-size: 32px; margin-bottom: 10px;">📭</div>
-                            <div style="color: #999;">받은 요청이 없습니다</div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                requestsList.innerHTML = data.map(request => {
-                    const requester = request.users;
-                    return `
-                        <div class="friend-item">
-                            <div>
-                                <div class="friend-name">${requester.nickname}</div>
-                                <div class="friend-status">친구 요청</div>
-                            </div>
-                            <div class="friend-actions">
-                                <button class="friend-action-btn accept-btn" data-request-id="${request.id}" data-requester-id="${requester.id}">수락</button>
-                                <button class="friend-action-btn reject-btn" data-request-id="${request.id}">거절</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                // 수락 버튼 이벤트
-                document.querySelectorAll('.accept-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        const requestId = btn.dataset.requestId;
-                        const requesterId = btn.dataset.requesterId;
-                        await acceptFriendRequest(requestId, requesterId);
-                    });
-                });
-
-                // 거절 버튼 이벤트
-                document.querySelectorAll('.reject-btn').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        const requestId = btn.dataset.requestId;
-                        await rejectFriendRequest(requestId);
-                    });
-                });
-                
-            } catch (error) {
-                console.error('Load friend requests error:', error);
-            }
-        }
-
-        // 친구 추가
-        document.getElementById('addFriendBtn').addEventListener('click', async () => {
-            const targetNickname = document.getElementById('addFriendInput').value.trim();
+      };
+      
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">{mode === 'login' ? '로그인' : '회원가입'}</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
             
-            if (!targetNickname) {
-                alert('닉네임을 입력하세요.');
-                return;
-            }
-
-            if (targetNickname === currentUser.nickname) {
-                alert('자기 자신은 추가할 수 없습니다.');
-                return;
-            }
-
-            try {
-                // 닉네임으로 사용자 찾기
-                const { data: targetUser, error: findError } = await supabase
-                    .from('users')
-                    .select('id, nickname')
-                    .eq('nickname', targetNickname)
-                    .single();
-
-                if (findError || !targetUser) {
-                    alert('존재하지 않는 사용자입니다.');
-                    return;
-                }
-
-                // 이미 친구인지 확인
-                const { data: existing } = await supabase
-                    .from('friendships')
-                    .select('status')
-                    .or(`and(user_id.eq.${currentUser.id},friend_id.eq.${targetUser.id}),and(user_id.eq.${targetUser.id},friend_id.eq.${currentUser.id})`)
-                    .single();
-
-                if (existing) {
-                    if (existing.status === 'accepted') {
-                        alert('이미 친구입니다.');
-                    } else {
-                        alert('이미 요청을 보냈거나 받았습니다.');
-                    }
-                    return;
-                }
-
-                // 친구 요청 보내기
-                const { error: insertError } = await supabase
-                    .from('friendships')
-                    .insert([
-                        {
-                            user_id: currentUser.id,
-                            friend_id: targetUser.id,
-                            status: 'pending'
-                        }
-                    ]);
-
-                if (insertError) throw insertError;
-
-                alert(`${targetNickname}님에게 친구 요청을 보냈습니다.`);
-                document.getElementById('addFriendInput').value = '';
-                
-            } catch (error) {
-                console.error('Add friend error:', error);
-                alert('친구 추가 중 오류가 발생했습니다.');
-            }
-        });
-
-        // 친구 요청 수락
-        async function acceptFriendRequest(requestId, requesterId) {
-            try {
-                // 요청 상태 업데이트
-                const { error: updateError } = await supabase
-                    .from('friendships')
-                    .update({ status: 'accepted' })
-                    .eq('id', requestId);
-
-                if (updateError) throw updateError;
-
-                // 역방향 친구 관계 추가
-                const { error: insertError } = await supabase
-                    .from('friendships')
-                    .insert([
-                        {
-                            user_id: currentUser.id,
-                            friend_id: requesterId,
-                            status: 'accepted'
-                        }
-                    ]);
-
-                if (insertError) throw insertError;
-
-                alert('친구 요청을 수락했습니다.');
-                loadFriendRequests();
-                loadFriends();
-                
-            } catch (error) {
-                console.error('Accept friend request error:', error);
-                alert('친구 요청 수락 중 오류가 발생했습니다.');
-            }
-        }
-
-        // 친구 요청 거절
-        async function rejectFriendRequest(requestId) {
-            try {
-                const { error } = await supabase
-                    .from('friendships')
-                    .delete()
-                    .eq('id', requestId);
-
-                if (error) throw error;
-
-                alert('친구 요청을 거절했습니다.');
-                loadFriendRequests();
-                
-            } catch (error) {
-                console.error('Reject friend request error:', error);
-                alert('친구 요청 거절 중 오류가 발생했습니다.');
-            }
-        }
-
-        // 채팅 열기
-        async function openChat(friendId, friendNickname) {
-            currentChatFriend = {
-                id: friendId,
-                nickname: friendNickname
-            };
-
-            document.getElementById('chatHeader').textContent = friendNickname;
-            document.getElementById('chatInput').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-
-            await loadMessages();
-        }
-
-        // 메시지 로드
-        async function loadMessages() {
-            if (!currentChatFriend) return;
-
-            try {
-                const { data, error } = await supabase
-                    .from('messages')
-                    .select('*')
-                    .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${currentChatFriend.id}),and(sender_id.eq.${currentChatFriend.id},receiver_id.eq.${currentUser.id})`)
-                    .order('created_at', { ascending: true });
-
-                if (error) throw error;
-
-                const chatMessages = document.getElementById('chatMessages');
-                
-                if (!data || data.length === 0) {
-                    chatMessages.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <div>첫 메시지를 보내보세요!</div>
-                        </div>
-                    `;
-                    return;
-                }
-
-                chatMessages.innerHTML = data.map(msg => {
-                    const isSent = msg.sender_id === currentUser.id;
-                    const time = new Date(msg.created_at).toLocaleTimeString('ko-KR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    });
-
-                    return `
-                        <div class="message ${isSent ? 'sent' : 'received'}">
-                            <div>${msg.content}</div>
-                            <div class="message-time">${time}</div>
-                        </div>
-                    `;
-                }).join('');
-
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-            } catch (error) {
-                console.error('Load messages error:', error);
-            }
-        }
-
-        // 메시지 전송
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const content = input.value.trim();
-
-            if (!content || !currentChatFriend) return;
-
-            try {
-                const { error } = await supabase
-                    .from('messages')
-                    .insert([
-                        {
-                            sender_id: currentUser.id,
-                            receiver_id: currentChatFriend.id,
-                            content: content
-                        }
-                    ]);
-
-                if (error) throw error;
-
-                input.value = '';
-                await loadMessages();
-                
-            } catch (error) {
-                console.error('Send message error:', error);
-                alert('메시지 전송 중 오류가 발생했습니다.');
-            }
-        }
-
-        document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // 실시간 메시지 구독
-        function subscribeToMessages() {
-            messageSubscription = supabase
-                .channel('messages')
-                .on('postgres_changes', 
-                    { 
-                        event: 'INSERT', 
-                        schema: 'public', 
-                        table: 'messages',
-                        filter: `receiver_id=eq.${currentUser.id}`
-                    }, 
-                    (payload) => {
-                        if (currentChatFriend && payload.new.sender_id === currentChatFriend.id) {
-                            loadMessages();
-                        }
-                    }
-                )
-                .subscribe();
-        }
-
-        // 세션 확인
-        supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
-            if (sessionError) {
-                console.error('Session error:', sessionError);
-                return;
-            }
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  required
+                  minLength="6"
+                />
+              </div>
+              
+              {mode === 'signup' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
+                  <input
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              )}
+              
+              <button
+                type="submit"
+                className="w-full py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+              >
+                {mode === 'login' ? '이메일로 로그인' : '회원가입'}
+              </button>
+            </form>
             
-            if (session && session.user) {
-                supabase
-                    .from('users')
-                    .select('id, nickname, email')
-                    .eq('id', session.user.id)
-                    .maybeSingle()
-                    .then(({ data, error }) => {
-                        if (error) {
-                            console.error('User data error:', error);
-                            return;
-                        }
-                        if (data) {
-                            currentUser = data;
-                            showMainApp();
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Failed to load user data:', err);
-                    });
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                className="text-sm text-orange-500 hover:underline"
+              >
+                {mode === 'login' ? '계정이 없으신가요? 회원가입' : '이미 계정이 있으신가요? 로그인'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 글쓰기 모달 컴포넌트
+    function PostModal({ onClose, onCreate, categories }) {
+      const [category, setCategory] = React.useState('free');
+      const [title, setTitle] = React.useState('');
+      const [content, setContent] = React.useState('');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onCreate(category, title, content);
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">새 게시글 작성</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">카테고리</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">제목</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  required
+                  placeholder="제목을 입력하세요"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">내용</label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  rows="6"
+                  required
+                  placeholder="내용을 입력하세요"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                작성 완료
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+    
+    // 아이돌 제안 모달 컴포넌트
+    function IdolSuggestionModal({ onClose, onSuggest }) {
+      const [name, setName] = React.useState('');
+      const [song, setSong] = React.useState('');
+      const [videoId, setVideoId] = React.useState('');
+      const [color, setColor] = React.useState('from-purple-500 to-pink-500');
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSuggest(name, song, videoId, color);
+      };
+      
+      const colorOptions = [
+        { value: 'from-blue-400 to-cyan-300', label: '파랑-청록' },
+        { value: 'from-purple-500 to-pink-400', label: '보라-분홍' },
+        { value: 'from-pink-500 to-rose-400', label: '분홍-장미' },
+        { value: 'from-red-500 to-orange-400', label: '빨강-주황' },
+        { value: 'from-yellow-500 to-red-500', label: '노랑-빨강' },
+        { value: 'from-green-400 to-emerald-500', label: '초록-에메랄드' }
+      ];
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">새 아이돌 제안</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">아이돌/그룹명</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                  placeholder="예: NewJeans"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">대표곡</label>
+                <input
+                  type="text"
+                  value={song}
+                  onChange={(e) => setSong(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                  placeholder="예: How Sweet"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">YouTube Video ID</label>
+                <input
+                  type="text"
+                  value={videoId}
+                  onChange={(e) => setVideoId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                  placeholder="예: Q3K0TOvTOno"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  유튜브 URL의 v= 뒤의 코드를 입력하세요
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">배경 색상</label>
+                <select
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  {colorOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors font-medium"
+              >
+                제안하기
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+    
+    // 게시글 상세보기 모달 컴포넌트
+    function PostDetailModal({ post, onClose }) {
+      const getCategoryColor = (category) => {
+        const colors = {
+          notice: 'bg-red-100 text-red-600',
+          news: 'bg-blue-100 text-blue-600',
+          request: 'bg-green-100 text-green-600',
+          free: 'bg-gray-100 text-gray-600',
+          qna: 'bg-purple-100 text-purple-600'
+        };
+        return colors[category] || 'bg-gray-100 text-gray-600';
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <span className={`text-xs px-2 py-1 rounded ${getCategoryColor(post.category)}`}>
+                  {post.category === 'notice' ? '공지' :
+                   post.category === 'news' ? '소식' :
+                   post.category === 'request' ? '요청' :
+                   post.category === 'free' ? '자유' : '질문답변'}
+                </span>
+                {post.hot && <span className="text-red-500">🔥 HOT</span>}
+              </div>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{post.title}</h2>
+            
+            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-3 mb-6">
+              <div className="flex items-center space-x-4">
+                <span className="font-medium">{post.author}</span>
+                <span>{new Date(post.created_at).toLocaleString('ko-KR', { 
+                  year: 'numeric', 
+                  month: '2-digit', 
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <span className="flex items-center">
+                  <Eye className="w-4 h-4 mr-1" />
+                  {post.views || 0}
+                </span>
+                <span className="flex items-center">
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  {post.comments}
+                </span>
+              </div>
+            </div>
+            
+            <div className="prose max-w-none">
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t">
+              <button 
+                onClick={onClose}
+                className="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 메신저 모달
+    function MessengerModal({ user, onClose, onSendMessage, onMarkAsRead }) {
+      const [selectedFriend, setSelectedFriend] = React.useState(null);
+      const [messageText, setMessageText] = React.useState('');
+      const [friends, setFriends] = React.useState([]);
+      const [messages, setMessages] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const messagesEndRef = React.useRef(null);
+      
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      };
+      
+      React.useEffect(() => {
+        scrollToBottom();
+      }, [messages]);
+      
+      React.useEffect(() => {
+        loadFriends();
+      }, []);
+      
+      const loadFriends = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('friendships')
+            .select(`
+              friend_id,
+              users!friendships_friend_id_fkey(id, nickname, email)
+            `)
+            .eq('user_id', user.id)
+            .eq('status', 'accepted');
+          
+          if (error) throw error;
+          setFriends((data || []).map(f => f.users));
+        } catch (error) {
+          console.error('친구 목록 로드 실패:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      React.useEffect(() => {
+        if (selectedFriend) {
+          loadMessages(selectedFriend.id);
+        }
+      }, [selectedFriend]);
+      
+      const loadMessages = async (friendId) => {
+        try {
+          const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .or(`and(sender_id.eq.${user.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${user.id})`)
+            .order('created_at', { ascending: true });
+          
+          if (error) throw error;
+          setMessages(data || []);
+          
+          const unreadMessages = data?.filter(m => m.receiver_id === user.id && !m.is_read);
+          if (unreadMessages && unreadMessages.length > 0) {
+            for (const msg of unreadMessages) {
+              await onMarkAsRead(msg.id);
             }
-        }).catch(err => {
-            console.error('Failed to get session:', err);
-        });
-    </script>
+          }
+        } catch (error) {
+          console.error('메시지 로드 실패:', error);
+        }
+      };
+      
+      const handleSend = async () => {
+        if (selectedFriend && messageText.trim()) {
+          await onSendMessage(selectedFriend.id, messageText);
+          setMessageText('');
+          await loadMessages(selectedFriend.id);
+        }
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl w-full max-w-4xl h-[600px] flex" onClick={(e) => e.stopPropagation()}>
+            <div className="w-1/3 border-r flex flex-col">
+              <div className="p-4 border-b flex items-center justify-between">
+                <h2 className="font-bold">메시지</h2>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {loading ? (
+                  <div className="text-center py-8 text-gray-500">로딩 중...</div>
+                ) : friends.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">친구가 없습니다</div>
+                ) : (
+                  friends.map((friend) => (
+                    <div
+                      key={friend.id}
+                      onClick={() => setSelectedFriend(friend)}
+                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedFriend?.id === friend.id ? 'bg-blue-50' : ''}`}
+                    >
+                      <div className="font-medium">{friend.nickname}</div>
+                      <div className="text-sm text-gray-500">{friend.email}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            
+            <div className="flex-1 flex flex-col">
+              {selectedFriend ? (
+                <>
+                  <div className="p-4 border-b">
+                    <div className="font-bold">{selectedFriend.nickname}</div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {messages.map((msg) => (
+                      <div key={msg.id} className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.sender_id === user.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+                          <div>{msg.content}</div>
+                          <div className="text-xs opacity-70 mt-1">
+                            {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  <div className="p-4 border-t flex space-x-2">
+                    <input
+                      type="text"
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                      placeholder="메시지 입력..."
+                      className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button onClick={handleSend} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                      전송
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-gray-500">
+                  친구를 선택하세요
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 알림 모달
+    function FriendRequestsModal({ onClose, friendRequests, onAccept, onReject }) {
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full max-h-[600px] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">친구 요청</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {friendRequests.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">친구 요청이 없습니다</div>
+            ) : (
+              <div className="space-y-3">
+                {friendRequests.map((req) => (
+                  <div key={req.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div>
+                      <div className="font-medium">{req.users.nickname}</div>
+                      <div className="text-sm text-gray-500">친구 요청을 보냈습니다</div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => onAccept(req.id, req.user_id)} 
+                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                      >
+                        수락
+                      </button>
+                      <button 
+                        onClick={() => onReject(req.id)} 
+                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        거절
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // 친구 모달
+    function FriendsModal({ user, onClose, onAddFriend, onAccept, onReject }) {
+      const [friendNickname, setFriendNickname] = React.useState('');
+      const [friends, setFriends] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      
+      React.useEffect(() => {
+        loadFriends();
+      }, []);
+      
+      const loadFriends = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('friendships')
+            .select(`
+              friend_id,
+              users!friendships_friend_id_fkey(id, nickname, email)
+            `)
+            .eq('user_id', user.id)
+            .eq('status', 'accepted');
+          
+          if (error) throw error;
+          setFriends((data || []).map(f => f.users));
+        } catch (error) {
+          console.error('친구 목록 로드 실패:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      const handleAdd = async () => {
+        await onAddFriend(friendNickname);
+        setFriendNickname('');
+        await loadFriends();
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[600px] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">친구</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={friendNickname}
+                  onChange={(e) => setFriendNickname(e.target.value)}
+                  placeholder="친구 닉네임 입력"
+                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button onClick={handleAdd} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center">
+                  <UserPlus className="w-5 h-5 mr-1" />
+                  추가
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="font-bold mb-2">친구 목록 ({friends.length})</h3>
+              {loading ? (
+                <div className="text-center py-4 text-gray-500">로딩 중...</div>
+              ) : friends.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">친구가 없습니다</div>
+              ) : (
+                <div className="space-y-2">
+                  {friends.map((friend) => (
+                    <div key={friend.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="font-medium">{friend.nickname}</div>
+                        <div className="text-sm text-gray-500">{friend.email}</div>
+                      </div>
+                      <Check className="w-5 h-5 text-green-500" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 관리자 페이지 컴포넌트
+    function AdminPage({ onClose, onApprove, onReject }) {
+      const [suggestions, setSuggestions] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      
+      React.useEffect(() => {
+        fetchSuggestions();
+      }, []);
+      
+      const fetchSuggestions = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('idol_suggestions')
+            .select('id, name, song, "videoId", color, suggested_by, status, created_at')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          // videoId가 없으면 videoid로 매핑
+          const mappedData = (data || []).map(sug => ({
+            ...sug,
+            videoId: sug.videoId || sug.videoid
+          }));
+          
+          setSuggestions(mappedData);
+        } catch (error) {
+          console.error('제안 로드 실패:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      const handleApprove = async (suggestion) => {
+        await onApprove(suggestion);
+        fetchSuggestions();
+      };
+      
+      const handleReject = async (id) => {
+        await onReject(id);
+        fetchSuggestions();
+      };
+      
+      return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">관리자 페이지 - 아이돌 제안 승인</h2>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            {loading ? (
+              <div className="text-center py-12 text-gray-500">
+                <div className="animate-pulse">로딩 중...</div>
+              </div>
+            ) : suggestions.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                대기 중인 제안이 없습니다
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {suggestions.map(suggestion => (
+                  <div key={suggestion.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-800">{suggestion.name}</h3>
+                        <p className="text-sm text-gray-600">대표곡: {suggestion.song}</p>
+                        <p className="text-xs text-gray-500 mt-1">Video ID: {suggestion.videoId}</p>
+                        <p className="text-xs text-gray-500">제안자: {suggestion.suggested_by}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(suggestion.created_at).toLocaleString('ko-KR')}
+                        </p>
+                        <div className={`mt-2 inline-block px-3 py-1 rounded text-xs bg-gradient-to-r ${suggestion.color} text-white`}>
+                          미리보기 색상
+                        </div>
+                      </div>
+                      <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => handleApprove(suggestion)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                        >
+                          ✓ 승인
+                        </button>
+                        <button
+                          onClick={() => handleReject(suggestion.id)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                        >
+                          ✗ 거부
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<TheDuckGo />);
+    
+    // Service Worker 등록 (PWA)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('ServiceWorker registration successful:', registration.scope);
+          })
+          .catch((error) => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
+    
+    // PWA 설치 프롬프트
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // 설치 버튼 표시 (선택사항)
+      console.log('PWA 설치 가능!');
+    });
+    
+    // PWA 설치 함수 (나중에 버튼에 연결 가능)
+    window.installPWA = async () => {
+      if (!deferredPrompt) {
+        alert('이미 설치되었거나 설치할 수 없습니다.');
+        return;
+      }
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        console.log('PWA 설치 완료!');
+      }
+      
+      deferredPrompt = null;
+    };
+  </script>
 </body>
 </html>
