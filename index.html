@@ -33,7 +33,7 @@
   <div id="root"></div>
   
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     // Supabase 클라이언트 초기화
     const supabase = window.supabase.createClient(
@@ -192,6 +192,8 @@
       const [friends, setFriends] = useState([]);
       const [unreadCount, setUnreadCount] = useState(0);
       const [notificationCount, setNotificationCount] = useState(0);
+      const prevUnreadCountRef = useRef(0);
+      const prevNotificationCountRef = useRef(0);
 
       useEffect(() => {
         const now = new Date();
@@ -272,10 +274,12 @@
           if (error) throw error;
           
           const newCount = data?.length || 0;
-          if (newCount > notificationCount && notificationCount !== 0) {
+          // 이전보다 증가했을 때만 소리 재생
+          if (newCount > prevNotificationCountRef.current) {
             playNotificationSound();
           }
           
+          prevNotificationCountRef.current = newCount;
           setNotificationCount(newCount);
           setFriendRequests(data || []);
         } catch (error) {
@@ -292,10 +296,12 @@
             .eq('is_read', false);
           
           const newCount = count || 0;
-          if (newCount > unreadCount && unreadCount !== 0) {
+          // 이전보다 증가했을 때만 소리 재생
+          if (newCount > prevUnreadCountRef.current) {
             playNotificationSound();
           }
           
+          prevUnreadCountRef.current = newCount;
           setUnreadCount(newCount);
         } catch (error) {
           console.error('읽지 않은 메시지 로드 실패:', error);
@@ -885,15 +891,17 @@
                         )}
                       </button>
                       
-                      <button onClick={() => setShowAdminPage(true)} className="text-sm px-3 py-1 bg-purple-600 rounded hover:bg-purple-700 transition-colors">
-                        관리자
-                      </button>
-                      <button onClick={handleLogout} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
-                        로그아웃
-                      </button>
+                      <div className="flex flex-col space-y-0.5">
+                        <button onClick={() => setShowAdminPage(true)} className="text-[10px] md:text-xs px-2 py-0.5 bg-purple-600 rounded hover:bg-purple-700 transition-colors whitespace-nowrap">
+                          관리자
+                        </button>
+                        <button onClick={handleLogout} className="text-[10px] md:text-xs px-2 py-0.5 bg-white/20 rounded hover:bg-white/30 transition-colors whitespace-nowrap">
+                          로그아웃
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="text-sm px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
+                    <button onClick={() => { setAuthMode('login'); setShowAuthModal(true); }} className="text-xs px-3 py-1 bg-white/20 rounded hover:bg-white/30 transition-colors">
                       로그인
                     </button>
                   )}
@@ -1328,7 +1336,7 @@
               user={user}
               onClose={() => setShowMessenger(false)}
               onSendMessage={handleSendMessage}
-              onMarkAsRead={handleMarkMessageAsRead}
+              onMarkAsRead={() => fetchUnreadMessages(user.id)}
             />
           )}
           
@@ -1719,6 +1727,19 @@
         loadFriends();
       }, []);
       
+      React.useEffect(() => {
+        if (selectedFriend) {
+          loadMessages(selectedFriend.id);
+          
+          // 2초마다 메시지 자동 새로고침
+          const interval = setInterval(() => {
+            loadMessages(selectedFriend.id);
+          }, 2000);
+          
+          return () => clearInterval(interval);
+        }
+      }, [selectedFriend]);
+      
       const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -1826,7 +1847,14 @@
           const unreadMessages = data?.filter(m => m.receiver_id === user.id && !m.is_read);
           if (unreadMessages && unreadMessages.length > 0) {
             for (const msg of unreadMessages) {
-              await onMarkAsRead(msg.id);
+              await supabase
+                .from('messages')
+                .update({ is_read: true })
+                .eq('id', msg.id);
+            }
+            // 읽음 처리 후 카운트 업데이트
+            if (onMarkAsRead) {
+              await onMarkAsRead();
             }
           }
         } catch (error) {
