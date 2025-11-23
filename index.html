@@ -1705,6 +1705,10 @@
       const [messages, setMessages] = React.useState([]);
       const [loading, setLoading] = React.useState(true);
       const messagesEndRef = React.useRef(null);
+      const [attachedFile, setAttachedFile] = React.useState(null);
+      const [isRecording, setIsRecording] = React.useState(false);
+      const [mediaRecorder, setMediaRecorder] = React.useState(null);
+      const fileInputRef = React.useRef(null);
       
       const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -1717,6 +1721,73 @@
       React.useEffect(() => {
         loadFriends();
       }, []);
+      
+      const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setAttachedFile(file);
+        }
+      };
+      
+      const handleRemoveFile = () => {
+        setAttachedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const recorder = new MediaRecorder(stream);
+          const chunks = [];
+          
+          recorder.ondataavailable = (e) => chunks.push(e.data);
+          recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            const file = new File([blob], `recording-${Date.now()}.webm`, { type: 'audio/webm' });
+            setAttachedFile(file);
+            stream.getTracks().forEach(track => track.stop());
+          };
+          
+          recorder.start();
+          setMediaRecorder(recorder);
+          setIsRecording(true);
+        } catch (error) {
+          alert('마이크 접근 권한이 필요합니다');
+        }
+      };
+      
+      const stopRecording = () => {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          setIsRecording(false);
+        }
+      };
+      
+      const uploadFile = async (file) => {
+        try {
+          const fileName = `${Date.now()}-${file.name}`;
+          const { data, error } = await supabase.storage
+            .from('message-files')
+            .upload(fileName, file);
+          
+          if (error) {
+            console.error('Storage 업로드 에러:', error);
+            alert('파일 업로드 실패: Supabase Storage 버킷 "message-files"을 생성해주세요.\n\nStorage → New Bucket → 이름: message-files (Public)');
+            throw error;
+          }
+          
+          const { data: urlData } = supabase.storage
+            .from('message-files')
+            .getPublicUrl(fileName);
+          
+          return urlData.publicUrl;
+        } catch (error) {
+          console.error('파일 업로드 실패:', error);
+          throw error;
+        }
+      };
       
       const loadFriends = async () => {
         try {
@@ -1767,54 +1838,113 @@
       };
       
       const handleSend = async () => {
-        if (selectedFriend && messageText.trim()) {
-          await onSendMessage(selectedFriend.id, messageText);
+        if (!selectedFriend) return;
+        if (!messageText.trim() && !attachedFile) return;
+        
+        try {
+          let fileUrl = null;
+          let fileType = null;
+          
+          if (attachedFile) {
+            try {
+              fileUrl = await uploadFile(attachedFile);
+              fileType = attachedFile.type.startsWith('image/') ? 'image' :
+                        attachedFile.type.startsWith('audio/') ? 'audio' :
+                        attachedFile.type.startsWith('video/') ? 'video' : 'file';
+            } catch (uploadError) {
+              console.error('파일 업로드 실패:', uploadError);
+              if (!messageText.trim()) {
+                alert('파일 업로드 실패. 텍스트 메시지를 추가하거나 Supabase Storage를 설정해주세요.');
+                return;
+              }
+              // 텍스트가 있으면 파일 없이 전송
+            }
+          }
+          
+          const { error } = await supabase
+            .from('messages')
+            .insert({
+              sender_id: user.id,
+              receiver_id: selectedFriend.id,
+              content: messageText.trim() || (fileUrl ? `[${fileType}]` : ''),
+              file_url: fileUrl,
+              file_type: fileType,
+              is_read: false
+            });
+          
+          if (error) throw error;
+          
           setMessageText('');
+          setAttachedFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
           await loadMessages(selectedFriend.id);
+        } catch (error) {
+          console.error('메시지 전송 실패:', error);
+          alert('메시지 전송 실패: ' + error.message);
         }
       };
       
       return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-          <div className="bg-white rounded-xl w-full max-w-4xl h-[600px] flex" onClick={(e) => e.stopPropagation()}>
-            <div className="w-1/3 border-r flex flex-col">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white/70 backdrop-blur-lg rounded-xl w-full max-w-4xl h-[600px] flex flex-col md:flex-row shadow-2xl border border-white/20" onClick={(e) => e.stopPropagation()}>
+            {/* 친구 목록 */}
+            <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r flex flex-col max-h-[200px] md:max-h-full">
               <div className="p-4 border-b flex items-center justify-between">
                 <h2 className="font-bold">메시지</h2>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 md:hidden">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {loading ? (
-                  <div className="text-center py-8 text-gray-500">로딩 중...</div>
+                  <div className="text-center py-8 text-gray-500 text-sm">로딩 중...</div>
                 ) : friends.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">친구가 없습니다</div>
+                  <div className="text-center py-8 text-gray-500 text-sm">친구가 없습니다</div>
                 ) : (
                   friends.map((friend) => (
                     <div
                       key={friend.id}
                       onClick={() => setSelectedFriend(friend)}
-                      className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${selectedFriend?.id === friend.id ? 'bg-blue-50' : ''}`}
+                      className={`p-3 border-b cursor-pointer hover:bg-white/50 ${selectedFriend?.id === friend.id ? 'bg-blue-100/50' : ''}`}
                     >
-                      <div className="font-medium">{friend.nickname}</div>
-                      <div className="text-sm text-gray-500">{friend.email}</div>
+                      <div className="font-medium text-sm">{friend.nickname}</div>
+                      <div className="text-xs text-gray-500 truncate">{friend.email}</div>
                     </div>
                   ))
                 )}
               </div>
             </div>
             
-            <div className="flex-1 flex flex-col">
+            {/* 채팅창 */}
+            <div className="flex-1 flex flex-col min-h-0">
               {selectedFriend ? (
                 <>
-                  <div className="p-4 border-b">
-                    <div className="font-bold">{selectedFriend.nickname}</div>
+                  <div className="p-3 border-b flex items-center justify-between">
+                    <div className="font-bold text-sm">{selectedFriend.nickname}</div>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 hidden md:block">
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <div className="flex-1 overflow-y-auto p-3 space-y-2">
                     {messages.map((msg) => (
                       <div key={msg.id} className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs px-4 py-2 rounded-lg ${msg.sender_id === user.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                          <div>{msg.content}</div>
+                        <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.sender_id === user.id ? 'bg-blue-500/90 text-white' : 'bg-white/80'}`}>
+                          {msg.file_url && msg.file_type === 'image' && (
+                            <img src={msg.file_url} alt="첨부 이미지" className="rounded mb-2 max-w-full" />
+                          )}
+                          {msg.file_url && msg.file_type === 'audio' && (
+                            <audio controls className="mb-2 max-w-full">
+                              <source src={msg.file_url} type="audio/webm" />
+                            </audio>
+                          )}
+                          {msg.file_url && msg.file_type === 'file' && (
+                            <a href={msg.file_url} target="_blank" className="block mb-2 underline text-xs">
+                              📎 파일 다운로드
+                            </a>
+                          )}
+                          {msg.content && <div>{msg.content}</div>}
                           <div className="text-xs opacity-70 mt-1">
                             {new Date(msg.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -1823,18 +1953,50 @@
                     ))}
                     <div ref={messagesEndRef} />
                   </div>
-                  <div className="p-4 border-t flex space-x-2">
-                    <input
-                      type="text"
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                      placeholder="메시지 입력..."
-                      className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                    <button onClick={handleSend} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                      전송
-                    </button>
+                  <div className="p-3 border-t bg-white/50">
+                    {attachedFile && (
+                      <div className="mb-2 flex items-center justify-between bg-blue-50 p-2 rounded">
+                        <span className="text-xs truncate flex-1">
+                          {attachedFile.type.startsWith('image/') ? '🖼️' : 
+                           attachedFile.type.startsWith('audio/') ? '🎤' : '📎'} {attachedFile.name}
+                        </span>
+                        <button onClick={handleRemoveFile} className="text-red-500 ml-2 text-sm">✕</button>
+                      </div>
+                    )}
+                    <div className="flex space-x-1">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
+                      />
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-2 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm"
+                        title="파일 첨부"
+                      >
+                        📎
+                      </button>
+                      <button 
+                        onClick={isRecording ? stopRecording : startRecording}
+                        className={`px-2 py-2 rounded-lg text-sm ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 hover:bg-gray-200'}`}
+                        title={isRecording ? "녹음 중지" : "음성 녹음"}
+                      >
+                        🎤
+                      </button>
+                      <input
+                        type="text"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                        placeholder="메시지 입력..."
+                        className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 text-sm"
+                      />
+                      <button onClick={handleSend} className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">
+                        전송
+                      </button>
+                    </div>
                   </div>
                 </>
               ) : (
