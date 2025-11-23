@@ -840,7 +840,7 @@
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-xl md:text-3xl">🐥</span>
-                  <h1 className="text-base md:text-xl font-bold">THE DUCK GO</h1>
+                  <h1 className="text-sm md:text-xl font-bold whitespace-nowrap">THE DUCK GO</h1>
                 </div>
                 <div className="flex items-center space-x-1.5 md:space-x-3">
                   <nav className="hidden md:flex space-x-4 text-xs font-medium">
@@ -926,9 +926,12 @@
             <section id="vote" className="mb-6 md:mb-8">
               <div className="flex items-center justify-between mb-3 md:mb-4">
                 <div className="flex items-center space-x-2">
-                  <h2 className="text-base md:text-xl font-bold text-gray-800 flex items-center whitespace-nowrap">
-                    <TrendingUp className="w-4 h-4 md:w-6 md:h-6 mr-1 md:mr-2 text-orange-500" />
-                    🔥 실시간 덕심투표
+                  <h2 className="text-base md:text-xl font-bold text-gray-800 flex items-center">
+                    <TrendingUp className="w-4 h-4 md:w-6 md:h-6 mr-1 md:mr-2 text-orange-500 flex-shrink-0" />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm md:text-xl">🔥 실시간</span>
+                      <span className="text-sm md:text-xl">덕심투표</span>
+                    </div>
                   </h2>
                   {resetDate && (
                     <p className="text-[10px] md:text-xs text-gray-500 whitespace-nowrap">
@@ -943,7 +946,7 @@
                   {user && (
                     <button 
                       onClick={() => setShowIdolSuggestionModal(true)}
-                      className="px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all whitespace-nowrap"
+                      className="px-2 py-1 md:px-3 md:py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] md:text-sm rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all whitespace-nowrap flex-shrink-0"
                     >
                       ➕ 아이돌 제안
                     </button>
